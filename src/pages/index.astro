@@ -8,95 +8,125 @@ import Credits from '../components/Credits.astro'
   <div class="flex h-full flex-col">
     <Header />
 
-    <main class="flex min-h-0 flex-1">
-      <!-- 左: エディタエリア（HTML/CSS/JS の3ペインを横並び） -->
-      <section class="flex min-w-0 flex-1 flex-col bg-slate-950">
-        <!-- 各ペインの表示トグル -->
-        <div class="flex items-center gap-1 border-b border-slate-800 bg-slate-900 px-2 py-1.5">
-          <span class="mr-1 text-[11px] font-medium text-slate-500">表示:</span>
-          <button
-            type="button"
-            class="panel-toggle rounded-md px-3 py-1 text-sm font-medium transition"
-            data-lang="html"
-            aria-pressed="true"
-          >
-            HTML
-          </button>
-          <button
-            type="button"
-            class="panel-toggle rounded-md px-3 py-1 text-sm font-medium transition"
-            data-lang="css"
-            aria-pressed="true"
-          >
-            CSS
-          </button>
-          <button
-            type="button"
-            class="panel-toggle rounded-md px-3 py-1 text-sm font-medium transition"
-            data-lang="javascript"
-            aria-pressed="true"
-          >
-            JS
-          </button>
-        </div>
-
-        <!-- 3ペイン本体 -->
-        <div class="flex min-h-0 flex-1">
-          <div
-            id="pane-html"
-            class="editor-pane flex min-w-0 flex-1 flex-col border-r border-slate-800"
-            data-lang="html"
-          >
-            <div class="border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
-              HTML
-            </div>
-            <div id="editor-html" class="min-h-0 flex-1"></div>
-          </div>
-
-          <div
-            id="pane-css"
-            class="editor-pane flex min-w-0 flex-1 flex-col border-r border-slate-800"
-            data-lang="css"
-          >
-            <div class="border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
-              CSS
-            </div>
-            <div id="editor-css" class="min-h-0 flex-1"></div>
-          </div>
-
-          <div
-            id="pane-javascript"
-            class="editor-pane flex min-w-0 flex-1 flex-col"
-            data-lang="javascript"
-          >
-            <div class="border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
-              JavaScript
-            </div>
-            <div id="editor-javascript" class="min-h-0 flex-1"></div>
-          </div>
-
-          <!-- 全ペイン非表示時の案内 -->
-          <div
-            id="panes-empty"
-            class="hidden flex-1 items-center justify-center p-6 text-center text-sm text-slate-600"
-          >
-            上の「表示」からペインを開いてください。
-          </div>
-        </div>
-      </section>
-
-      <!-- 右: ライブプレビュー -->
-      <section class="flex min-w-0 flex-1 flex-col border-l border-slate-800">
-        <div
-          class="flex items-center justify-between border-b border-slate-800 bg-slate-900 px-3 py-1.5"
+    <main class="flex min-h-0 flex-1 flex-col bg-slate-950">
+      <!-- 各ペインの表示トグル -->
+      <div class="flex items-center gap-1 border-b border-slate-800 bg-slate-900 px-2 py-1.5">
+        <span class="mr-1 text-[11px] font-medium text-slate-500">表示:</span>
+        <button
+          type="button"
+          class="panel-toggle rounded-md px-3 py-1 text-sm font-medium transition"
+          data-pane="html"
+          aria-pressed="true"
         >
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-400"
-            >プレビュー</span
-          >
-          <span class="font-mono text-[10px] text-slate-500">HTML/CSS は自動反映・JS は手動実行</span>
+          HTML
+        </button>
+        <button
+          type="button"
+          class="panel-toggle rounded-md px-3 py-1 text-sm font-medium transition"
+          data-pane="css"
+          aria-pressed="true"
+        >
+          CSS
+        </button>
+        <button
+          type="button"
+          class="panel-toggle rounded-md px-3 py-1 text-sm font-medium transition"
+          data-pane="javascript"
+          aria-pressed="true"
+        >
+          JS
+        </button>
+        <button
+          type="button"
+          class="panel-toggle rounded-md px-3 py-1 text-sm font-medium transition"
+          data-pane="preview"
+          aria-pressed="true"
+        >
+          プレビュー
+        </button>
+      </div>
+
+      <!-- 4ペイン本体（HTML/CSS/JS/プレビュー）。ガターをドラッグして幅を変更できる。 -->
+      <div id="panes" class="flex min-h-0 flex-1">
+        <div id="pane-html" class="editor-pane flex min-w-0 flex-col" data-pane="html">
+          <div class="border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+            HTML
+          </div>
+          <div id="editor-html" class="min-h-0 flex-1"></div>
         </div>
-        <div id="preview-host" class="min-h-0 flex-1 bg-white"></div>
-      </section>
+
+        <div
+          id="gutter-css"
+          class="pane-gutter w-1.5 shrink-0 cursor-col-resize bg-slate-800 transition hover:bg-emerald-600"
+          data-pane="css"
+          role="separator"
+          aria-orientation="vertical"
+          title="ドラッグして幅を変更"
+        >
+        </div>
+
+        <div id="pane-css" class="editor-pane flex min-w-0 flex-col" data-pane="css">
+          <div class="border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+            CSS
+          </div>
+          <div id="editor-css" class="min-h-0 flex-1"></div>
+        </div>
+
+        <div
+          id="gutter-javascript"
+          class="pane-gutter w-1.5 shrink-0 cursor-col-resize bg-slate-800 transition hover:bg-emerald-600"
+          data-pane="javascript"
+          role="separator"
+          aria-orientation="vertical"
+          title="ドラッグして幅を変更"
+        >
+        </div>
+
+        <div
+          id="pane-javascript"
+          class="editor-pane flex min-w-0 flex-col"
+          data-pane="javascript"
+        >
+          <div class="border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+            JavaScript
+          </div>
+          <div id="editor-javascript" class="min-h-0 flex-1"></div>
+        </div>
+
+        <div
+          id="gutter-preview"
+          class="pane-gutter w-1.5 shrink-0 cursor-col-resize bg-slate-800 transition hover:bg-emerald-600"
+          data-pane="preview"
+          role="separator"
+          aria-orientation="vertical"
+          title="ドラッグして幅を変更"
+        >
+        </div>
+
+        <div
+          id="pane-preview"
+          class="editor-pane flex min-w-0 flex-col border-l border-slate-800"
+          data-pane="preview"
+        >
+          <div
+            class="flex items-center justify-between border-b border-slate-800 bg-slate-900 px-3 py-1"
+          >
+            <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400"
+              >プレビュー</span
+            >
+            <span class="text-[10px] text-slate-500">HTML/CSS は自動反映・JS は手動実行</span>
+          </div>
+          <div id="preview-host" class="min-h-0 flex-1 bg-white"></div>
+        </div>
+
+        <!-- 全ペイン非表示時の案内 -->
+        <div
+          id="panes-empty"
+          class="hidden flex-1 items-center justify-center p-6 text-center text-sm text-slate-600"
+        >
+          上の「表示」からペインを開いてください。
+        </div>
+      </div>
     </main>
   </div>
 
@@ -111,10 +141,15 @@ import Credits from '../components/Credits.astro'
     clearCode,
     loadPanels,
     savePanels,
+    loadSizes,
+    saveSizes,
     debounce,
+    PANE_KEYS,
     type CodeState,
     type PanelState,
+    type PanelSizes,
     type EditorLang,
+    type PaneKey,
   } from '../lib/storage'
   import { PreviewController } from '../lib/preview'
 
@@ -126,6 +161,7 @@ import Credits from '../components/Credits.astro'
   })
 
   const LANGS: EditorLang[] = ['html', 'css', 'javascript']
+  const isEditorLang = (k: PaneKey): k is EditorLang => k !== 'preview'
 
   async function init() {
     const monaco = await loader.init()
@@ -187,23 +223,53 @@ import Credits from '../components/Credits.astro'
     // 初回プレビュー（HTML/CSS のみ）。
     preview.renderMarkup(getState())
 
-    // ペインの表示/非表示トグル。状態は localStorage に永続化する。
+    // ペインの表示/非表示と相対サイズ。いずれも localStorage に永続化する。
     let panels: PanelState = loadPanels()
+    let sizes: PanelSizes = loadSizes()
     const emptyEl = document.getElementById('panes-empty')!
     const toggleBtns = Array.from(
       document.querySelectorAll<HTMLButtonElement>('.panel-toggle')
     )
+    const MIN_PANE_PX = 120
+
+    // 該当ペインがエディタなら Monaco のレイアウトを再計算する。
+    const relayout = (key: PaneKey) => {
+      if (isEditorLang(key)) editors[key].layout()
+    }
+
+    // 相対サイズ（flex-grow）を各ペインへ反映する。
+    const applySizes = () => {
+      for (const key of PANE_KEYS) {
+        const pane = document.getElementById(`pane-${key}`)!
+        pane.style.flex = `${sizes[key]} 1 0%`
+      }
+    }
+
+    // ガター X の左側にある「直近の表示ペイン」を返す。
+    const nearestLeftVisible = (key: PaneKey): PaneKey | null => {
+      const idx = PANE_KEYS.indexOf(key)
+      for (let i = idx - 1; i >= 0; i--) {
+        if (panels[PANE_KEYS[i]]) return PANE_KEYS[i]
+      }
+      return null
+    }
 
     const syncPanels = () => {
-      for (const lang of LANGS) {
-        const visible = panels[lang]
-        const pane = document.getElementById(`pane-${lang}`)!
+      for (const key of PANE_KEYS) {
+        const visible = panels[key]
+        const pane = document.getElementById(`pane-${key}`)!
         pane.classList.toggle('hidden', !visible)
-        // 再表示時にエディタのサイズを再計算する。
-        if (visible) editors[lang].layout()
+        if (visible) relayout(key)
+      }
+      // ガターは「自分が表示」かつ「左に表示ペインがある」ときだけ出す。
+      for (const key of PANE_KEYS) {
+        const gutter = document.getElementById(`gutter-${key}`)
+        if (!gutter) continue
+        const show = panels[key] && nearestLeftVisible(key) !== null
+        gutter.classList.toggle('hidden', !show)
       }
       for (const btn of toggleBtns) {
-        const visible = panels[btn.dataset.lang as EditorLang]
+        const visible = panels[btn.dataset.pane as PaneKey]
         btn.setAttribute('aria-pressed', String(visible))
         btn.classList.toggle('bg-emerald-600', visible)
         btn.classList.toggle('text-white', visible)
@@ -211,20 +277,72 @@ import Credits from '../components/Credits.astro'
         btn.classList.toggle('hover:text-slate-200', !visible)
       }
       // すべて非表示なら案内を出す。
-      const anyVisible = LANGS.some((lang) => panels[lang])
+      const anyVisible = PANE_KEYS.some((key) => panels[key])
       emptyEl.classList.toggle('hidden', anyVisible)
       emptyEl.classList.toggle('flex', !anyVisible)
     }
 
     for (const btn of toggleBtns) {
       btn.addEventListener('click', () => {
-        const lang = btn.dataset.lang as EditorLang
-        panels = { ...panels, [lang]: !panels[lang] }
+        const key = btn.dataset.pane as PaneKey
+        panels = { ...panels, [key]: !panels[key] }
         savePanels(panels)
         syncPanels()
       })
     }
+
+    applySizes()
     syncPanels()
+
+    // ガターのドラッグで隣接2ペインの相対サイズを変更する。
+    for (const gutter of document.querySelectorAll<HTMLElement>('.pane-gutter')) {
+      gutter.addEventListener('pointerdown', (e: PointerEvent) => {
+        const rightKey = gutter.dataset.pane as PaneKey
+        const leftKey = nearestLeftVisible(rightKey)
+        if (!leftKey) return
+
+        const leftEl = document.getElementById(`pane-${leftKey}`)!
+        const rightEl = document.getElementById(`pane-${rightKey}`)!
+        const leftW = leftEl.getBoundingClientRect().width
+        const rightW = rightEl.getBoundingClientRect().width
+        const totalPx = leftW + rightW
+        const totalGrow = sizes[leftKey] + sizes[rightKey]
+        const startX = e.clientX
+
+        gutter.setPointerCapture(e.pointerId)
+        document.body.style.cursor = 'col-resize'
+        document.body.style.userSelect = 'none'
+
+        const onMove = (ev: PointerEvent) => {
+          const delta = ev.clientX - startX
+          const newLeftPx = Math.min(
+            Math.max(leftW + delta, MIN_PANE_PX),
+            totalPx - MIN_PANE_PX
+          )
+          const ratio = newLeftPx / totalPx
+          sizes = {
+            ...sizes,
+            [leftKey]: totalGrow * ratio,
+            [rightKey]: totalGrow * (1 - ratio),
+          }
+          applySizes()
+          relayout(leftKey)
+          relayout(rightKey)
+        }
+
+        const onUp = () => {
+          gutter.releasePointerCapture(e.pointerId)
+          document.body.style.cursor = ''
+          document.body.style.userSelect = ''
+          gutter.removeEventListener('pointermove', onMove)
+          gutter.removeEventListener('pointerup', onUp)
+          saveSizes(sizes)
+        }
+
+        gutter.addEventListener('pointermove', onMove)
+        gutter.addEventListener('pointerup', onUp)
+      })
+    }
 
     // 各モデルの変更を監視。HTML/CSS は即時にプレビュー反映、JS は保存のみ。
     models.html.onDidChangeContent(() => {
