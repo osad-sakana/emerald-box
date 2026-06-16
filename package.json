@@ -3,7 +3,9 @@
   "type": "module",
   "version": "0.1.0",
   "private": true,
-  "description": "AI Web Sandbox - インブラウザ HTMLプレビューツール (Astro + Monaco Editor + Tailwind CSS)",
+  "license": "MIT",
+  "author": "Yu Osada",
+  "description": "Web Sandbox - インブラウザ HTMLプレビューツール (Astro + Monaco Editor + Tailwind CSS)",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
