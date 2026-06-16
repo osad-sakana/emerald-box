@@ -1,7 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import Header from '../components/Header.astro'
-import SnippetMenu from '../components/SnippetMenu.astro'
 ---
 
 <Layout>
@@ -9,10 +8,7 @@ import SnippetMenu from '../components/SnippetMenu.astro'
     <Header />
 
     <main class="flex min-h-0 flex-1">
-      <!-- 左: スニペットメニュー -->
-      <SnippetMenu />
-
-      <!-- 中央: エディタエリア -->
+      <!-- 左: エディタエリア -->
       <section class="flex min-w-0 flex-1 flex-col bg-slate-950">
         <!-- タブ -->
         <div class="flex items-center gap-1 border-b border-slate-800 bg-slate-900 px-2 py-1.5">
@@ -60,13 +56,13 @@ import SnippetMenu from '../components/SnippetMenu.astro'
 
 <script>
   import loader from '@monaco-editor/loader'
-  import { SNIPPETS, type EditorLang } from '../lib/snippets'
   import {
     loadCode,
     saveCode,
     clearCode,
     debounce,
     type CodeState,
+    type EditorLang,
   } from '../lib/storage'
   import { PreviewController } from '../lib/preview'
 
@@ -173,21 +169,6 @@ import SnippetMenu from '../components/SnippetMenu.astro'
     models.javascript.onDidChangeContent(() => {
       persist()
     })
-
-    // スニペット挿入: 対象タブの末尾に追記してそのタブへ切り替える。
-    for (const btn of document.querySelectorAll<HTMLButtonElement>(
-      '.snippet-item'
-    )) {
-      btn.addEventListener('click', () => {
-        const snippet = SNIPPETS.find((s) => s.id === btn.dataset.snippetId)
-        if (!snippet) return
-        const model = models[snippet.target]
-        const current = model.getValue()
-        const next = current.trim() ? `${current}\n\n${snippet.code}` : snippet.code
-        model.setValue(next)
-        switchLang(snippet.target)
-      })
-    }
 
     // ▶ JS実行
     document.getElementById('btn-run')!.addEventListener('click', () => {
