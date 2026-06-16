@@ -19,6 +19,32 @@ const { title = 'Emerald Box — AI Web Sandbox' } = Astro.props
 </html>
 
 <style is:global>
+  /* 0xProto を CDN (jsDelivr) から読み込む */
+  @font-face {
+    font-family: '0xProto';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('https://cdn.jsdelivr.net/gh/0xType/0xProto@2.502/fonts/0xProto-Regular.woff2')
+      format('woff2');
+  }
+  @font-face {
+    font-family: '0xProto';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('https://cdn.jsdelivr.net/gh/0xType/0xProto@2.502/fonts/0xProto-Bold.woff2')
+      format('woff2');
+  }
+  @font-face {
+    font-family: '0xProto';
+    font-style: italic;
+    font-weight: 400;
+    font-display: swap;
+    src: url('https://cdn.jsdelivr.net/gh/0xType/0xProto@2.502/fonts/0xProto-Italic.woff2')
+      format('woff2');
+  }
+
   html,
   body {
     margin: 0;

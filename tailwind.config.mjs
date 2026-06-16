@@ -12,20 +12,9 @@ export default {
         },
       },
       fontFamily: {
-        sans: [
-          'Inter',
-          '游ゴシック',
-          'Yu Gothic',
-          'system-ui',
-          'sans-serif',
-        ],
-        mono: [
-          'Fira Code',
-          'JetBrains Mono',
-          'ui-monospace',
-          'SFMono-Regular',
-          'monospace',
-        ],
+        // UI・コードともに 0xProto を基本フォントとする
+        sans: ['0xProto', '游ゴシック', 'Yu Gothic', 'system-ui', 'sans-serif'],
+        mono: ['0xProto', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
     },
   },
