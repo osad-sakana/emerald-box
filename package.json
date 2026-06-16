@@ -5,6 +5,7 @@
   "private": true,
   "license": "MIT",
   "author": "Yu Osada",
+  "packageManager": "pnpm@10.33.0",
   "description": "Web Sandbox - インブラウザ HTMLプレビューツール (Astro + Monaco Editor + Tailwind CSS)",
   "scripts": {
     "dev": "astro dev",
