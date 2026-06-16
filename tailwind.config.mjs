@@ -13,8 +13,9 @@ export default {
       },
       fontFamily: {
         // UI・コードともに 0xProto を基本フォントとする
-        sans: ['0xProto', '游ゴシック', 'Yu Gothic', 'system-ui', 'sans-serif'],
-        mono: ['0xProto', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        // 数字始まりのフォント名は CSS で引用符が必須
+        sans: ['"0xProto"', '游ゴシック', 'Yu Gothic', 'system-ui', 'sans-serif'],
+        mono: ['"0xProto"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
     },
   },
