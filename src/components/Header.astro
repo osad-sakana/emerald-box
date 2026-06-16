@@ -1,0 +1,49 @@
+---
+// アプリ最上部のヘッダー。左にアプリ名、右に操作ボタン群。
+---
+
+<header
+  class="flex items-center justify-between border-b border-emerald-800 bg-slate-900 px-4 py-2.5"
+>
+  <div class="flex items-center gap-2">
+    <span
+      class="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-600 text-sm font-bold text-white"
+      >E</span
+    >
+    <h1 class="text-base font-bold tracking-wide text-slate-100">
+      Emerald Box
+      <span class="ml-1 text-xs font-normal text-emerald-400">AI Web Sandbox</span>
+    </h1>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <span
+      id="save-status"
+      class="mr-1 hidden text-xs text-emerald-400 sm:inline"
+      aria-live="polite"></span>
+
+    <button
+      id="btn-run"
+      type="button"
+      class="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-emerald-500 active:scale-95"
+    >
+      ▶ JS実行
+    </button>
+
+    <button
+      id="btn-stop"
+      type="button"
+      class="rounded-md bg-slate-700 px-3 py-1.5 text-sm font-semibold text-slate-100 transition hover:bg-red-600 active:scale-95"
+    >
+      ■ 強制終了
+    </button>
+
+    <button
+      id="btn-reset"
+      type="button"
+      class="rounded-md bg-slate-700 px-3 py-1.5 text-sm font-semibold text-slate-100 transition hover:bg-amber-600 active:scale-95"
+    >
+      環境初期化
+    </button>
+  </div>
+</header>
