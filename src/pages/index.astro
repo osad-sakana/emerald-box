@@ -9,34 +9,80 @@ import Credits from '../components/Credits.astro'
     <Header />
 
     <main class="flex min-h-0 flex-1">
-      <!-- 左: エディタエリア -->
+      <!-- 左: エディタエリア（HTML/CSS/JS の3ペインを横並び） -->
       <section class="flex min-w-0 flex-1 flex-col bg-slate-950">
-        <!-- タブ -->
+        <!-- 各ペインの表示トグル -->
         <div class="flex items-center gap-1 border-b border-slate-800 bg-slate-900 px-2 py-1.5">
+          <span class="mr-1 text-[11px] font-medium text-slate-500">表示:</span>
           <button
             type="button"
-            class="editor-tab rounded-md px-3 py-1 text-sm font-medium transition"
+            class="panel-toggle rounded-md px-3 py-1 text-sm font-medium transition"
             data-lang="html"
+            aria-pressed="true"
           >
             HTML
           </button>
           <button
             type="button"
-            class="editor-tab rounded-md px-3 py-1 text-sm font-medium transition"
+            class="panel-toggle rounded-md px-3 py-1 text-sm font-medium transition"
             data-lang="css"
+            aria-pressed="true"
           >
             CSS
           </button>
           <button
             type="button"
-            class="editor-tab rounded-md px-3 py-1 text-sm font-medium transition"
+            class="panel-toggle rounded-md px-3 py-1 text-sm font-medium transition"
             data-lang="javascript"
+            aria-pressed="true"
           >
             JS
           </button>
         </div>
-        <!-- Monaco コンテナ -->
-        <div id="editor" class="min-h-0 flex-1"></div>
+
+        <!-- 3ペイン本体 -->
+        <div class="flex min-h-0 flex-1">
+          <div
+            id="pane-html"
+            class="editor-pane flex min-w-0 flex-1 flex-col border-r border-slate-800"
+            data-lang="html"
+          >
+            <div class="border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              HTML
+            </div>
+            <div id="editor-html" class="min-h-0 flex-1"></div>
+          </div>
+
+          <div
+            id="pane-css"
+            class="editor-pane flex min-w-0 flex-1 flex-col border-r border-slate-800"
+            data-lang="css"
+          >
+            <div class="border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              CSS
+            </div>
+            <div id="editor-css" class="min-h-0 flex-1"></div>
+          </div>
+
+          <div
+            id="pane-javascript"
+            class="editor-pane flex min-w-0 flex-1 flex-col"
+            data-lang="javascript"
+          >
+            <div class="border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              JavaScript
+            </div>
+            <div id="editor-javascript" class="min-h-0 flex-1"></div>
+          </div>
+
+          <!-- 全ペイン非表示時の案内 -->
+          <div
+            id="panes-empty"
+            class="hidden flex-1 items-center justify-center p-6 text-center text-sm text-slate-600"
+          >
+            上の「表示」からペインを開いてください。
+          </div>
+        </div>
       </section>
 
       <!-- 右: ライブプレビュー -->
@@ -63,8 +109,11 @@ import Credits from '../components/Credits.astro'
     loadCode,
     saveCode,
     clearCode,
+    loadPanels,
+    savePanels,
     debounce,
     type CodeState,
+    type PanelState,
     type EditorLang,
   } from '../lib/storage'
   import { PreviewController } from '../lib/preview'
@@ -76,8 +125,7 @@ import Credits from '../components/Credits.astro'
     },
   })
 
-  const ACTIVE_TAB = ['bg-slate-950', 'text-emerald-400']
-  const INACTIVE_TAB = ['text-slate-400', 'hover:text-slate-200']
+  const LANGS: EditorLang[] = ['html', 'css', 'javascript']
 
   async function init() {
     const monaco = await loader.init()
@@ -92,18 +140,24 @@ import Credits from '../components/Credits.astro'
         javascript: monaco.editor.createModel(initial.javascript, 'javascript'),
       }
 
-    const container = document.getElementById('editor')!
-    const editor = monaco.editor.create(container, {
-      model: models.html,
-      theme: 'vs-dark',
-      automaticLayout: true,
-      fontSize: 14,
-      fontFamily: '"0xProto", ui-monospace, monospace',
-      minimap: { enabled: false },
-      scrollBeyondLastLine: false,
-      tabSize: 2,
-      padding: { top: 12 },
-    })
+    // 各ペインに独立した Monaco エディタを生成する。
+    const makeEditor = (lang: EditorLang) =>
+      monaco.editor.create(document.getElementById(`editor-${lang}`)!, {
+        model: models[lang],
+        theme: 'vs-dark',
+        automaticLayout: true,
+        fontSize: 14,
+        fontFamily: '"0xProto", ui-monospace, monospace',
+        minimap: { enabled: false },
+        scrollBeyondLastLine: false,
+        tabSize: 2,
+        padding: { top: 12 },
+      })
+    const editors: Record<EditorLang, ReturnType<typeof makeEditor>> = {
+      html: makeEditor('html'),
+      css: makeEditor('css'),
+      javascript: makeEditor('javascript'),
+    }
 
     const host = document.getElementById('preview-host')!
     const preview = new PreviewController(host)
@@ -133,32 +187,44 @@ import Credits from '../components/Credits.astro'
     // 初回プレビュー（HTML/CSS のみ）。
     preview.renderMarkup(getState())
 
-    // タブ切り替え。
-    let activeLang: EditorLang = 'html'
-    const tabs = Array.from(
-      document.querySelectorAll<HTMLButtonElement>('.editor-tab')
+    // ペインの表示/非表示トグル。状態は localStorage に永続化する。
+    let panels: PanelState = loadPanels()
+    const emptyEl = document.getElementById('panes-empty')!
+    const toggleBtns = Array.from(
+      document.querySelectorAll<HTMLButtonElement>('.panel-toggle')
     )
-    const syncTabs = () => {
-      for (const tab of tabs) {
-        const isActive = tab.dataset.lang === activeLang
-        tab.classList.toggle('bg-slate-950', isActive)
-        tab.classList.toggle('text-emerald-400', isActive)
-        tab.classList.toggle('text-slate-400', !isActive)
-        tab.classList.toggle('hover:text-slate-200', !isActive)
+
+    const syncPanels = () => {
+      for (const lang of LANGS) {
+        const visible = panels[lang]
+        const pane = document.getElementById(`pane-${lang}`)!
+        pane.classList.toggle('hidden', !visible)
+        // 再表示時にエディタのサイズを再計算する。
+        if (visible) editors[lang].layout()
       }
+      for (const btn of toggleBtns) {
+        const visible = panels[btn.dataset.lang as EditorLang]
+        btn.setAttribute('aria-pressed', String(visible))
+        btn.classList.toggle('bg-emerald-600', visible)
+        btn.classList.toggle('text-white', visible)
+        btn.classList.toggle('text-slate-400', !visible)
+        btn.classList.toggle('hover:text-slate-200', !visible)
+      }
+      // すべて非表示なら案内を出す。
+      const anyVisible = LANGS.some((lang) => panels[lang])
+      emptyEl.classList.toggle('hidden', anyVisible)
+      emptyEl.classList.toggle('flex', !anyVisible)
     }
-    const switchLang = (lang: EditorLang) => {
-      activeLang = lang
-      editor.setModel(models[lang])
-      syncTabs()
-      editor.focus()
+
+    for (const btn of toggleBtns) {
+      btn.addEventListener('click', () => {
+        const lang = btn.dataset.lang as EditorLang
+        panels = { ...panels, [lang]: !panels[lang] }
+        savePanels(panels)
+        syncPanels()
+      })
     }
-    for (const tab of tabs) {
-      tab.addEventListener('click', () =>
-        switchLang(tab.dataset.lang as EditorLang)
-      )
-    }
-    syncTabs()
+    syncPanels()
 
     // 各モデルの変更を監視。HTML/CSS は即時にプレビュー反映、JS は保存のみ。
     models.html.onDidChangeContent(() => {
