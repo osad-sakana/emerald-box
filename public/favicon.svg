@@ -1,0 +1,31 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Emerald Box</title>
+  <defs>
+    <linearGradient id="eb-bg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10b981" />
+      <stop offset="1" stop-color="#047857" />
+    </linearGradient>
+  </defs>
+
+  <!-- エメラルドのタイル背景 -->
+  <rect width="32" height="32" rx="7" fill="url(#eb-bg)" />
+
+  <!-- アイソメトリックな箱（Box） -->
+  <!-- 上面 -->
+  <path d="M16 6 L25 11 L16 16 L7 11 Z" fill="#ffffff" fill-opacity="0.95" />
+  <!-- 左面 -->
+  <path d="M7 11 L16 16 L16 26 L7 21 Z" fill="#ffffff" fill-opacity="0.55" />
+  <!-- 右面 -->
+  <path d="M25 11 L25 21 L16 26 L16 16 Z" fill="#ffffff" fill-opacity="0.75" />
+
+  <!-- 稜線を強調 -->
+  <path
+    d="M16 6 L25 11 L25 21 L16 26 L7 21 L7 11 Z M7 11 L16 16 L25 11 M16 16 L16 26"
+    stroke="#065f46"
+    stroke-width="1"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+    fill="none"
+    stroke-opacity="0.6"
+  />
+</svg>
