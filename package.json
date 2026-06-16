@@ -1,0 +1,22 @@
+{
+  "name": "emerald-box",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI Web Sandbox - インブラウザ HTMLプレビューツール (Astro + Monaco Editor + Tailwind CSS)",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^4.16.18"
+  },
+  "devDependencies": {
+    "@astrojs/tailwind": "^5.1.5",
+    "@monaco-editor/loader": "^1.5.0",
+    "tailwindcss": "^3.4.17"
+  }
+}
