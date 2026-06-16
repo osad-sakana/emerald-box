@@ -1,5 +1,5 @@
 // LocalStorage への自動保存・復元ユーティリティ。
-import type { EditorLang } from './snippets'
+export type EditorLang = 'html' | 'css' | 'javascript'
 
 const STORAGE_KEY = 'emerald-box:code:v1'
 
@@ -9,15 +9,11 @@ export interface CodeState {
   javascript: string
 }
 
+// 初期状態は空。ユーザーがゼロから記述する。
 export const DEFAULT_CODE: CodeState = {
-  html: `<main class="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-50">
-  <h1 class="text-3xl font-bold text-emerald-600">Emerald Box へようこそ</h1>
-  <p class="text-slate-500">左のスニペットや上のタブを使ってコードを編集しましょう。</p>
-</main>`,
-  css: `/* ここに CSS を記述します（Tailwind と併用可能） */`,
-  javascript: `// ここに JavaScript を記述します。
-// 上部の「▶ JS実行」ボタンで実行されます。
-console.log('Emerald Box の準備ができました')`,
+  html: '',
+  css: '',
+  javascript: '',
 }
 
 // immutableに状態を読み込む。壊れたデータはデフォルトにフォールバック。
@@ -70,5 +66,3 @@ export function debounce<A extends unknown[]>(
     timer = setTimeout(() => fn(...args), delay)
   }
 }
-
-export type { EditorLang }
