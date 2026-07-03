@@ -7,16 +7,21 @@ const TAILWIND_CDN = 'https://cdn.tailwindcss.com'
 // includeJs=false のときは <script> を埋め込まない（HTML/CSSのみ反映）。
 function buildDocument(state: CodeState, includeJs: boolean): string {
   const js = includeJs ? `<script>\n${state.javascript}\n<\/script>` : ''
+  // ユーザーCSSはbody末尾に置く: Tailwind CDNは実行後に自身の生成CSSを
+  // <head>末尾へ追加するため、<head>内に置くと同じ詳細度のセレクタ（h1等）が
+  // Preflightに上書きされてしまう。body末尾ならDOM順序で必ず後に来て勝つ。
+  // ただし詳細度が同じ場合に限る。Tailwindのユーティリティクラス（例: text-xl）は
+  // 要素セレクタより詳細度が高いため、順序に関係なく引き続き優先される。
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="${TAILWIND_CDN}"><\/script>
-  <style>${state.css}</style>
 </head>
 <body>
 ${state.html}
+<style>${state.css}</style>
 ${js}
 </body>
 </html>`
