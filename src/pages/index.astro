@@ -50,56 +50,89 @@ import JsIcon from '../components/icons/JsIcon.astro'
         >
           プレビュー
         </button>
+
+        <span class="mx-2 h-4 w-px bg-slate-700" aria-hidden="true"></span>
+
+        <span class="mr-1 text-[11px] font-medium text-slate-500">レイアウト:</span>
+        <button
+          type="button"
+          class="layout-toggle rounded-md px-3 py-1 text-sm font-medium transition"
+          data-layout="horizontal"
+          aria-pressed="true"
+        >
+          横並び
+        </button>
+        <button
+          type="button"
+          class="layout-toggle rounded-md px-3 py-1 text-sm font-medium transition"
+          data-layout="vertical"
+          aria-pressed="false"
+        >
+          縦並び
+        </button>
       </div>
 
-      <!-- 4ペイン本体（HTML/CSS/JS/プレビュー）。ガターをドラッグして幅を変更できる。 -->
+      <!-- 4ペイン本体（HTML/CSS/JS/プレビュー）。ガターをドラッグして幅（縦並び時は高さ/幅）を変更できる。 -->
       <div id="panes" class="flex min-h-0 flex-1">
-        <div id="pane-html" class="editor-pane flex min-w-0 flex-col" data-pane="html">
-          <div class="flex items-center gap-1.5 border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
-            <Html5Icon class="h-3 w-3 shrink-0" />
-            HTML
+        <!--
+          editor-group: 横並びモードでは `contents`（display:contents）を付けたままにし、
+          ボックスとして存在しない透過ラッパーにする。これにより中の3ペイン+2ガターは
+          実質的に #panes の直接のflex子要素として振る舞い、既存のリサイズロジックが無改造で動く。
+          縦並びモードでは JS 側で `contents` を外し `flex flex-col` に切り替える。
+        -->
+        <!--
+          min-w-0: editor-group 自身は常に #panes（横並び）のflex子要素なので、
+          横並び/縦並びどちらのモードでも幅方向に縮小できるよう常時付与する
+          （横並びモードでは display:contents のため実際には無視される）。
+        -->
+        <div id="editor-group" class="contents min-w-0">
+          <div id="pane-html" class="editor-pane flex min-w-0 flex-col" data-pane="html">
+            <div class="flex items-center gap-1.5 border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              <Html5Icon class="h-3 w-3 shrink-0" />
+              HTML
+            </div>
+            <div id="editor-html" class="min-h-0 flex-1"></div>
           </div>
-          <div id="editor-html" class="min-h-0 flex-1"></div>
-        </div>
 
-        <div
-          id="gutter-css"
-          class="pane-gutter w-1.5 shrink-0 cursor-col-resize bg-slate-800 transition hover:bg-emerald-600"
-          data-pane="css"
-          role="separator"
-          aria-orientation="vertical"
-          title="ドラッグして幅を変更"
-        >
-        </div>
-
-        <div id="pane-css" class="editor-pane flex min-w-0 flex-col" data-pane="css">
-          <div class="flex items-center gap-1.5 border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
-            <Css3Icon class="h-3 w-3 shrink-0" />
-            CSS
+          <div
+            id="gutter-css"
+            class="pane-gutter w-1.5 shrink-0 cursor-col-resize bg-slate-800 transition hover:bg-emerald-600"
+            data-pane="css"
+            role="separator"
+            aria-orientation="vertical"
+            title="ドラッグして幅を変更"
+          >
           </div>
-          <div id="editor-css" class="min-h-0 flex-1"></div>
-        </div>
 
-        <div
-          id="gutter-javascript"
-          class="pane-gutter w-1.5 shrink-0 cursor-col-resize bg-slate-800 transition hover:bg-emerald-600"
-          data-pane="javascript"
-          role="separator"
-          aria-orientation="vertical"
-          title="ドラッグして幅を変更"
-        >
-        </div>
-
-        <div
-          id="pane-javascript"
-          class="editor-pane flex min-w-0 flex-col"
-          data-pane="javascript"
-        >
-          <div class="flex items-center gap-1.5 border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
-            <JsIcon class="h-3 w-3 shrink-0" />
-            JavaScript
+          <div id="pane-css" class="editor-pane flex min-w-0 flex-col" data-pane="css">
+            <div class="flex items-center gap-1.5 border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              <Css3Icon class="h-3 w-3 shrink-0" />
+              CSS
+            </div>
+            <div id="editor-css" class="min-h-0 flex-1"></div>
           </div>
-          <div id="editor-javascript" class="min-h-0 flex-1"></div>
+
+          <div
+            id="gutter-javascript"
+            class="pane-gutter w-1.5 shrink-0 cursor-col-resize bg-slate-800 transition hover:bg-emerald-600"
+            data-pane="javascript"
+            role="separator"
+            aria-orientation="vertical"
+            title="ドラッグして幅を変更"
+          >
+          </div>
+
+          <div
+            id="pane-javascript"
+            class="editor-pane flex min-w-0 flex-col"
+            data-pane="javascript"
+          >
+            <div class="flex items-center gap-1.5 border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              <JsIcon class="h-3 w-3 shrink-0" />
+              JavaScript
+            </div>
+            <div id="editor-javascript" class="min-h-0 flex-1"></div>
+          </div>
         </div>
 
         <div
@@ -152,11 +185,16 @@ import JsIcon from '../components/icons/JsIcon.astro'
     savePanels,
     loadSizes,
     saveSizes,
+    loadLayout,
+    saveLayout,
+    loadEditorGroupSize,
+    saveEditorGroupSize,
     debounce,
     PANE_KEYS,
     type CodeState,
     type PanelState,
     type PanelSizes,
+    type LayoutMode,
     type EditorLang,
     type PaneKey,
   } from '../lib/storage'
@@ -232,29 +270,42 @@ import JsIcon from '../components/icons/JsIcon.astro'
     // 初回プレビュー（HTML/CSS のみ）。
     preview.renderMarkup(getState())
 
-    // ペインの表示/非表示と相対サイズ。いずれも localStorage に永続化する。
+    // ペインの表示/非表示・相対サイズ・並び方向。いずれも localStorage に永続化する。
     let panels: PanelState = loadPanels()
     let sizes: PanelSizes = loadSizes()
+    let layoutMode: LayoutMode = loadLayout()
+    // 縦並び時、エディタ全体(editor-group)とプレビューの相対サイズ。
+    let editorGroupSize = loadEditorGroupSize()
     const emptyEl = document.getElementById('panes-empty')!
+    const editorGroupEl = document.getElementById('editor-group')!
     const toggleBtns = Array.from(
       document.querySelectorAll<HTMLButtonElement>('.panel-toggle')
     )
+    const layoutBtns = Array.from(
+      document.querySelectorAll<HTMLButtonElement>('.layout-toggle')
+    )
     const MIN_PANE_PX = 120
+    // ガタードラッグ中はレイアウト切替を無効化する（軸・対象がズレるのを防ぐ）。
+    let isDragging = false
 
     // 該当ペインがエディタなら Monaco のレイアウトを再計算する。
     const relayout = (key: PaneKey) => {
       if (isEditorLang(key)) editors[key].layout()
     }
 
-    // 相対サイズ（flex-grow）を各ペインへ反映する。
+    // 相対サイズ（flex-grow）を各ペイン・editor-group全体へ反映する。
+    // horizontal モードでは editor-group は display:contents のため style.flex は無視される。
     const applySizes = () => {
       for (const key of PANE_KEYS) {
         const pane = document.getElementById(`pane-${key}`)!
         pane.style.flex = `${sizes[key]} 1 0%`
       }
+      editorGroupEl.style.flex = `${editorGroupSize} 1 0%`
     }
 
-    // ガター X の左側にある「直近の表示ペイン」を返す。
+    // PANE_KEYS 順で「自分より前にある直近の表示ペイン」を返す。
+    // 並びが横一列でも縦積みでも「一つ前の表示ペイン」という意味は変わらないため、
+    // レイアウトモードに関わらずそのまま使える。
     const nearestLeftVisible = (key: PaneKey): PaneKey | null => {
       const idx = PANE_KEYS.indexOf(key)
       for (let i = idx - 1; i >= 0; i--) {
@@ -277,6 +328,12 @@ import JsIcon from '../components/icons/JsIcon.astro'
         const show = panels[key] && nearestLeftVisible(key) !== null
         gutter.classList.toggle('hidden', !show)
       }
+      // 縦並び時、HTML/CSS/JS が全て非表示なら editor-group 自体を畳んで空白を残さない。
+      const anyEditorVisible = LANGS.some((lang) => panels[lang])
+      editorGroupEl.classList.toggle(
+        'hidden',
+        layoutMode === 'vertical' && !anyEditorVisible
+      )
       for (const btn of toggleBtns) {
         const visible = panels[btn.dataset.pane as PaneKey]
         btn.setAttribute('aria-pressed', String(visible))
@@ -291,6 +348,47 @@ import JsIcon from '../components/icons/JsIcon.astro'
       emptyEl.classList.toggle('flex', !anyVisible)
     }
 
+    // レイアウトモードに応じて editor-group・内部ガターの見た目/軸を切り替える。
+    const applyLayoutMode = () => {
+      const vertical = layoutMode === 'vertical'
+
+      // 3状態（横並び=contents / 縦並び表示中=flex-col / 縦並び空=hidden）を
+      // CSS のカスケード順に頼らず、ここで明示的に排他制御する。
+      editorGroupEl.classList.toggle('contents', !vertical)
+      editorGroupEl.classList.toggle('flex', vertical)
+      editorGroupEl.classList.toggle('flex-col', vertical)
+      if (!vertical) editorGroupEl.classList.remove('hidden')
+
+      for (const lang of LANGS) {
+        const pane = document.getElementById(`pane-${lang}`)!
+        pane.classList.toggle('min-w-0', !vertical)
+        pane.classList.toggle('min-h-0', vertical)
+      }
+
+      for (const key of ['css', 'javascript'] as const) {
+        const gutter = document.getElementById(`gutter-${key}`)!
+        gutter.classList.toggle('w-1.5', !vertical)
+        gutter.classList.toggle('h-1.5', vertical)
+        gutter.classList.toggle('cursor-col-resize', !vertical)
+        gutter.classList.toggle('cursor-row-resize', vertical)
+        gutter.setAttribute('aria-orientation', vertical ? 'horizontal' : 'vertical')
+        gutter.title = vertical ? 'ドラッグして高さを変更' : 'ドラッグして幅を変更'
+      }
+
+      for (const btn of layoutBtns) {
+        const active = btn.dataset.layout === layoutMode
+        btn.setAttribute('aria-pressed', String(active))
+        btn.classList.toggle('bg-emerald-600', active)
+        btn.classList.toggle('text-white', active)
+        btn.classList.toggle('text-slate-400', !active)
+        btn.classList.toggle('hover:text-slate-200', !active)
+      }
+
+      applySizes()
+      syncPanels()
+      for (const key of PANE_KEYS) relayout(key)
+    }
+
     for (const btn of toggleBtns) {
       btn.addEventListener('click', () => {
         const key = btn.dataset.pane as PaneKey
@@ -300,42 +398,78 @@ import JsIcon from '../components/icons/JsIcon.astro'
       })
     }
 
-    applySizes()
-    syncPanels()
+    for (const btn of layoutBtns) {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.layout as LayoutMode
+        if (mode === layoutMode || isDragging) return
+        layoutMode = mode
+        saveLayout(layoutMode)
+        applyLayoutMode()
+      })
+    }
 
-    // ガターのドラッグで隣接2ペインの相対サイズを変更する。
+    applySizes()
+    applyLayoutMode()
+
+    // ガターのドラッグで隣接2要素の相対サイズを変更する。
+    // gutter-css/gutter-javascript は editor-group 内部の仕切り（縦並び時は上下、横並び時は左右）。
+    // gutter-preview は editor-group 全体とプレビューの仕切りで、常に左右方向（縦並び時も同じ）。
     for (const gutter of document.querySelectorAll<HTMLElement>('.pane-gutter')) {
       gutter.addEventListener('pointerdown', (e: PointerEvent) => {
         const rightKey = gutter.dataset.pane as PaneKey
-        const leftKey = nearestLeftVisible(rightKey)
-        if (!leftKey) return
+        const vertical = layoutMode === 'vertical'
+        const isPreviewGutter = gutter.id === 'gutter-preview'
+        const axisVertical = vertical && !isPreviewGutter
+        const useEditorGroup = isPreviewGutter && vertical
 
-        const leftEl = document.getElementById(`pane-${leftKey}`)!
+        let leftEl: HTMLElement
+        let leftKey: PaneKey | null = null
+        if (useEditorGroup) {
+          if (editorGroupEl.classList.contains('hidden')) return
+          leftEl = editorGroupEl
+        } else {
+          leftKey = nearestLeftVisible(rightKey)
+          if (!leftKey) return
+          leftEl = document.getElementById(`pane-${leftKey}`)!
+        }
         const rightEl = document.getElementById(`pane-${rightKey}`)!
-        const leftW = leftEl.getBoundingClientRect().width
-        const rightW = rightEl.getBoundingClientRect().width
-        const totalPx = leftW + rightW
-        const totalGrow = sizes[leftKey] + sizes[rightKey]
-        const startX = e.clientX
 
+        const size = (el: HTMLElement) => {
+          const rect = el.getBoundingClientRect()
+          return axisVertical ? rect.height : rect.width
+        }
+        const pointerPos = (ev: PointerEvent) => (axisVertical ? ev.clientY : ev.clientX)
+
+        const leftSize0 = size(leftEl)
+        const rightSize0 = size(rightEl)
+        const totalPx = leftSize0 + rightSize0
+        const leftGrow0 = useEditorGroup ? editorGroupSize : sizes[leftKey as PaneKey]
+        const totalGrow = leftGrow0 + sizes[rightKey]
+        const startPos = pointerPos(e)
+
+        isDragging = true
+        for (const btn of layoutBtns) btn.disabled = true
         gutter.setPointerCapture(e.pointerId)
-        document.body.style.cursor = 'col-resize'
+        document.body.style.cursor = axisVertical ? 'row-resize' : 'col-resize'
         document.body.style.userSelect = 'none'
 
         const onMove = (ev: PointerEvent) => {
-          const delta = ev.clientX - startX
+          const delta = pointerPos(ev) - startPos
           const newLeftPx = Math.min(
-            Math.max(leftW + delta, MIN_PANE_PX),
+            Math.max(leftSize0 + delta, MIN_PANE_PX),
             totalPx - MIN_PANE_PX
           )
           const ratio = newLeftPx / totalPx
-          sizes = {
-            ...sizes,
-            [leftKey]: totalGrow * ratio,
-            [rightKey]: totalGrow * (1 - ratio),
+          const newLeftGrow = totalGrow * ratio
+          const newRightGrow = totalGrow * (1 - ratio)
+          if (useEditorGroup) {
+            editorGroupSize = newLeftGrow
+          } else {
+            sizes = { ...sizes, [leftKey as PaneKey]: newLeftGrow }
           }
+          sizes = { ...sizes, [rightKey]: newRightGrow }
           applySizes()
-          relayout(leftKey)
+          if (!useEditorGroup) relayout(leftKey as PaneKey)
           relayout(rightKey)
         }
 
@@ -346,6 +480,9 @@ import JsIcon from '../components/icons/JsIcon.astro'
           gutter.removeEventListener('pointermove', onMove)
           gutter.removeEventListener('pointerup', onUp)
           saveSizes(sizes)
+          saveEditorGroupSize(editorGroupSize)
+          isDragging = false
+          for (const btn of layoutBtns) btn.disabled = false
         }
 
         gutter.addEventListener('pointermove', onMove)

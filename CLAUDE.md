@@ -25,8 +25,9 @@ pnpm preview      # ビルド結果のプレビュー
 
 - `src/pages/index.astro` が UI 本体 + クライアントスクリプト。`<script>` 内で Monaco を初期化し全機能を配線する。
 - **ペインの概念**: `PaneKey = 'html' | 'css' | 'javascript' | 'preview'`（`src/lib/storage.ts`）。HTML/CSS/JS/プレビューの4ペインを横並びにし、各ペインは表示トグルとガターによるリサイズが可能。
-  - 表示状態・サイズ（flex-grow 比率）・コードはそれぞれ別キーで `localStorage` に永続化（`emerald-box:code/panels/sizes:v1`）。
+  - 表示状態・サイズ（flex-grow 比率）・コード・レイアウト方向（横並び/縦並び）はそれぞれ別キーで `localStorage` に永続化（`emerald-box:code/panels/sizes/layout/editor-group-size:v1`）。
   - エディタは `EditorLang`（preview を除く3種）にのみ存在。`preview` を扱う箇所は `isEditorLang()` でガードする。
+  - **レイアウトモード**: デフォルトは横並び。「縦並び」では HTML/CSS/JS の3エディタだけを縦積みにし、プレビューは引き続き右側に横並びで残す。`#editor-group` という透過ラッパー（`display: contents`）で実現しており、横並び時はボックスとして存在しないため既存のガター/リサイズロジックが無改造で動く。縦並び時のみ `flex flex-col` に切り替わる。
 - `src/lib/preview.ts` の `PreviewController` が iframe を管理。
   - `renderMarkup()`: HTML/CSS のみ反映（ライブプレビュー）。
   - `runWithJs()`: JS を含めて実行（「JS実行」ボタン）。
@@ -47,6 +48,7 @@ pnpm preview      # ビルド結果のプレビュー
 - **0xProto のフォント名は CSS で必ず引用符で囲む**（`"0xProto"`）。数字始まりのフォント名は無引用だと無効トークンになり適用されない。Tailwind config・Monaco の `fontFamily`・`@font-face` すべてで引用する。
 - **プレビュー iframe に `allow-same-origin` を絶対に追加しない**。`allow-scripts` と併用するとサンドボックスが実質無効化される。
 - ペインを再表示・リサイズした後は対象エディタの `editor.layout()` を呼んでサイズを再計算する。
+- **`#editor-group`(縦並びレイアウト用ラッパー)の `contents`/`hidden` は必ずJS側で排他的に切り替える**。Tailwindのクラス定義順に頼って共存させない（バージョン更新で崩れるため）。
 
 ## 公開について
 
