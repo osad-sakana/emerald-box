@@ -40,6 +40,24 @@ export const LICENSES: LicenseEntry[] = [
     copyright: 'Copyright (c) 2026, 0xType Project Authors',
     url: 'https://github.com/0xType/0xProto',
   },
+  {
+    name: 'HTML5 ロゴ (デザインを一部参考に独自作成)',
+    license: 'CC BY 3.0',
+    copyright: 'Copyright (c) 2011 W3C (MIT, ERCIM, Keio, Beihang)',
+    url: 'https://www.w3.org/html/logo/',
+  },
+  {
+    name: 'CSS3 ロゴ (デザインを一部参考に独自作成)',
+    license: 'CC BY 3.0',
+    copyright: 'Copyright (c) 2011 W3C (MIT, ERCIM, Keio, Beihang)',
+    url: 'https://www.w3.org/html/logo/',
+  },
+  {
+    name: 'JavaScript ロゴ (デザインを一部参考に独自作成)',
+    license: 'Public Domain',
+    copyright: 'Created by Roger Ferguson (2011)',
+    url: 'https://github.com/voodootikigod/logo.js',
+  },
 ]
 
 // MIT ライセンス本文（許諾条件・無保証条項）。各 MIT パッケージ共通。
@@ -51,3 +69,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 // SIL Open Font License の概要（全文は OFL.txt / 配布元を参照）。
 export const OFL_NOTICE_TEXT = `この Font Software は SIL Open Font License, Version 1.1 のもとで提供されています。フォントの複製・改変・再配布が可能ですが、上記の著作権およびライセンス表示を保持する必要があり、Reserved Font Name の流用は禁止されています。ライセンス全文は https://scripts.sil.org/OFL を参照してください。`
+
+// CC BY 3.0 の概要（全文は https://creativecommons.org/licenses/by/3.0/ を参照）。
+export const CC_BY_NOTICE_TEXT = `このロゴのデザインは Creative Commons Attribution 3.0 Unported License のもとで提供されている W3C の HTML5/CSS3 ロゴを参考に、本アプリ用として新規に描き起こしたオリジナル SVG です。複製・改変・商用利用が可能ですが、著作権表示を保持する必要があります。ライセンス全文は https://creativecommons.org/licenses/by/3.0/ を参照してください。`
+
+// パブリックドメイン相当のロゴに関する注記。
+export const PUBLIC_DOMAIN_NOTICE_TEXT = `このロゴのデザインは Roger Ferguson 氏が制作しパブリックドメイン相当で公開している JavaScript ロゴを参考に、本アプリ用として新規に描き起こしたオリジナル SVG です。`

@@ -1,8 +1,16 @@
 ---
-import { LICENSES, MIT_LICENSE_TEXT, OFL_NOTICE_TEXT } from '../lib/licenses'
+import {
+  LICENSES,
+  MIT_LICENSE_TEXT,
+  OFL_NOTICE_TEXT,
+  CC_BY_NOTICE_TEXT,
+  PUBLIC_DOMAIN_NOTICE_TEXT,
+} from '../lib/licenses'
 
 const mitEntries = LICENSES.filter((l) => l.license.startsWith('MIT'))
 const oflEntries = LICENSES.filter((l) => l.license.startsWith('SIL'))
+const ccByEntries = LICENSES.filter((l) => l.license.startsWith('CC BY'))
+const publicDomainEntries = LICENSES.filter((l) => l.license.startsWith('Public Domain'))
 ---
 
 <!-- ライセンス表示モーダル。初期状態は非表示。 -->
@@ -78,7 +86,7 @@ const oflEntries = LICENSES.filter((l) => l.license.startsWith('SIL'))
           class="whitespace-pre-wrap rounded-md bg-slate-950 p-3 text-[11px] leading-relaxed text-slate-400">{MIT_LICENSE_TEXT}</pre>
       </section>
 
-      <section>
+      <section class="mb-5">
         <h3 class="mb-1 text-xs font-bold uppercase tracking-wider text-slate-400">
           SIL Open Font License 1.1
         </h3>
@@ -87,6 +95,28 @@ const oflEntries = LICENSES.filter((l) => l.license.startsWith('SIL'))
         </p>
         <pre
           class="whitespace-pre-wrap rounded-md bg-slate-950 p-3 text-[11px] leading-relaxed text-slate-400">{OFL_NOTICE_TEXT}</pre>
+      </section>
+
+      <section class="mb-5">
+        <h3 class="mb-1 text-xs font-bold uppercase tracking-wider text-slate-400">
+          CC BY 3.0
+        </h3>
+        <p class="mb-2 text-xs text-slate-500">
+          適用: {ccByEntries.map((e) => e.name).join('、')}
+        </p>
+        <pre
+          class="whitespace-pre-wrap rounded-md bg-slate-950 p-3 text-[11px] leading-relaxed text-slate-400">{CC_BY_NOTICE_TEXT}</pre>
+      </section>
+
+      <section>
+        <h3 class="mb-1 text-xs font-bold uppercase tracking-wider text-slate-400">
+          Public Domain
+        </h3>
+        <p class="mb-2 text-xs text-slate-500">
+          適用: {publicDomainEntries.map((e) => e.name).join('、')}
+        </p>
+        <pre
+          class="whitespace-pre-wrap rounded-md bg-slate-950 p-3 text-[11px] leading-relaxed text-slate-400">{PUBLIC_DOMAIN_NOTICE_TEXT}</pre>
       </section>
     </div>
   </div>
