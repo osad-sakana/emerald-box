@@ -2,6 +2,9 @@
 import Layout from '../layouts/Layout.astro'
 import Header from '../components/Header.astro'
 import Credits from '../components/Credits.astro'
+import Html5Icon from '../components/icons/Html5Icon.astro'
+import Css3Icon from '../components/icons/Css3Icon.astro'
+import JsIcon from '../components/icons/JsIcon.astro'
 ---
 
 <Layout>
@@ -14,26 +17,29 @@ import Credits from '../components/Credits.astro'
         <span class="mr-1 text-[11px] font-medium text-slate-500">表示:</span>
         <button
           type="button"
-          class="panel-toggle rounded-md px-3 py-1 text-sm font-medium transition"
+          class="panel-toggle flex items-center gap-1.5 rounded-md px-3 py-1 text-sm font-medium transition"
           data-pane="html"
           aria-pressed="true"
         >
+          <Html5Icon class="h-3.5 w-3.5 shrink-0" />
           HTML
         </button>
         <button
           type="button"
-          class="panel-toggle rounded-md px-3 py-1 text-sm font-medium transition"
+          class="panel-toggle flex items-center gap-1.5 rounded-md px-3 py-1 text-sm font-medium transition"
           data-pane="css"
           aria-pressed="true"
         >
+          <Css3Icon class="h-3.5 w-3.5 shrink-0" />
           CSS
         </button>
         <button
           type="button"
-          class="panel-toggle rounded-md px-3 py-1 text-sm font-medium transition"
+          class="panel-toggle flex items-center gap-1.5 rounded-md px-3 py-1 text-sm font-medium transition"
           data-pane="javascript"
           aria-pressed="true"
         >
+          <JsIcon class="h-3.5 w-3.5 shrink-0" />
           JS
         </button>
         <button
@@ -49,7 +55,8 @@ import Credits from '../components/Credits.astro'
       <!-- 4ペイン本体（HTML/CSS/JS/プレビュー）。ガターをドラッグして幅を変更できる。 -->
       <div id="panes" class="flex min-h-0 flex-1">
         <div id="pane-html" class="editor-pane flex min-w-0 flex-col" data-pane="html">
-          <div class="border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+          <div class="flex items-center gap-1.5 border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+            <Html5Icon class="h-3 w-3 shrink-0" />
             HTML
           </div>
           <div id="editor-html" class="min-h-0 flex-1"></div>
@@ -66,7 +73,8 @@ import Credits from '../components/Credits.astro'
         </div>
 
         <div id="pane-css" class="editor-pane flex min-w-0 flex-col" data-pane="css">
-          <div class="border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+          <div class="flex items-center gap-1.5 border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+            <Css3Icon class="h-3 w-3 shrink-0" />
             CSS
           </div>
           <div id="editor-css" class="min-h-0 flex-1"></div>
@@ -87,7 +95,8 @@ import Credits from '../components/Credits.astro'
           class="editor-pane flex min-w-0 flex-col"
           data-pane="javascript"
         >
-          <div class="border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+          <div class="flex items-center gap-1.5 border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+            <JsIcon class="h-3 w-3 shrink-0" />
             JavaScript
           </div>
           <div id="editor-javascript" class="min-h-0 flex-1"></div>
