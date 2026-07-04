@@ -8,6 +8,11 @@ export const PANE_KEYS: PaneKey[] = ['html', 'css', 'javascript', 'preview']
 const STORAGE_KEY = 'emerald-box:code:v1'
 const PANELS_KEY = 'emerald-box:panels:v1'
 const SIZES_KEY = 'emerald-box:sizes:v1'
+const LAYOUT_KEY = 'emerald-box:layout:v1'
+const EDITOR_GROUP_SIZE_KEY = 'emerald-box:editor-group-size:v1'
+
+// ペイン全体の並び方向。
+export type LayoutMode = 'horizontal' | 'vertical'
 
 export interface CodeState {
   html: string
@@ -43,6 +48,14 @@ export const DEFAULT_SIZES: PanelSizes = {
   javascript: 1,
   preview: 1,
 }
+
+// 初期レイアウトは横並び（従来通り）。
+export const DEFAULT_LAYOUT: LayoutMode = 'horizontal'
+
+// 縦並び時、エディタ3つ全体とプレビューの相対サイズ（flex-grow 値）。
+// プレビューの DEFAULT_SIZES と同じ 1 にすることで、初期状態（HTML+プレビューのみ表示）の
+// 見た目が横並び時と一致する。
+export const DEFAULT_EDITOR_GROUP_SIZE = 1
 
 // immutableに状態を読み込む。壊れたデータはデフォルトにフォールバック。
 export function loadCode(): CodeState {
@@ -80,6 +93,8 @@ export function clearCode(): void {
     localStorage.removeItem(STORAGE_KEY)
     localStorage.removeItem(PANELS_KEY)
     localStorage.removeItem(SIZES_KEY)
+    localStorage.removeItem(LAYOUT_KEY)
+    localStorage.removeItem(EDITOR_GROUP_SIZE_KEY)
   } catch (error) {
     console.error('リセットに失敗しました:', error)
   }
@@ -143,6 +158,50 @@ export function savePanels(state: PanelState): void {
     localStorage.setItem(PANELS_KEY, JSON.stringify(state))
   } catch (error) {
     console.error('ペイン状態の保存に失敗しました:', error)
+  }
+}
+
+// レイアウト方向の読み込み。不正な値はデフォルトにフォールバック。
+export function loadLayout(): LayoutMode {
+  if (typeof localStorage === 'undefined') return DEFAULT_LAYOUT
+  try {
+    const raw = localStorage.getItem(LAYOUT_KEY)
+    return raw === 'vertical' ? 'vertical' : DEFAULT_LAYOUT
+  } catch (error) {
+    console.error('レイアウトモードの読み込みに失敗しました:', error)
+    return DEFAULT_LAYOUT
+  }
+}
+
+export function saveLayout(mode: LayoutMode): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(LAYOUT_KEY, mode)
+  } catch (error) {
+    console.error('レイアウトモードの保存に失敗しました:', error)
+  }
+}
+
+// 縦並び時のエディタ全体サイズの読み込み。正の数以外はデフォルトにフォールバック。
+export function loadEditorGroupSize(): number {
+  if (typeof localStorage === 'undefined') return DEFAULT_EDITOR_GROUP_SIZE
+  try {
+    const raw = localStorage.getItem(EDITOR_GROUP_SIZE_KEY)
+    if (raw === null) return DEFAULT_EDITOR_GROUP_SIZE
+    const parsed = Number(raw)
+    return parsed > 0 ? parsed : DEFAULT_EDITOR_GROUP_SIZE
+  } catch (error) {
+    console.error('エディタグループサイズの読み込みに失敗しました:', error)
+    return DEFAULT_EDITOR_GROUP_SIZE
+  }
+}
+
+export function saveEditorGroupSize(size: number): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(EDITOR_GROUP_SIZE_KEY, String(size))
+  } catch (error) {
+    console.error('エディタグループサイズの保存に失敗しました:', error)
   }
 }
 
