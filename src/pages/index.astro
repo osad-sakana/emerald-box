@@ -334,6 +334,23 @@ import JsIcon from '../components/icons/JsIcon.astro'
         'hidden',
         layoutMode === 'vertical' && !anyEditorVisible
       )
+      // 表示中の「まとまり」（横並び時は各ペイン、縦並び時は editor-group とプレビュー）が
+      // 1つだけの場合、flex-grow が保存済みの1未満の比率のままだと
+      // CSSの仕様上「空き領域 × 比率」しか広がらず、残りが空白になってしまう。
+      // 単独表示のときだけ flex-grow を 1 に上書きして画面いっぱいに広げる。
+      applySizes()
+      const visibleParties =
+        layoutMode === 'vertical'
+          ? [
+              ...(anyEditorVisible ? [editorGroupEl] : []),
+              ...(panels.preview ? [document.getElementById('pane-preview')!] : []),
+            ]
+          : PANE_KEYS.filter((key) => panels[key]).map(
+              (key) => document.getElementById(`pane-${key}`)!
+            )
+      if (visibleParties.length === 1) {
+        visibleParties[0].style.flex = '1 1 0%'
+      }
       for (const btn of toggleBtns) {
         const visible = panels[btn.dataset.pane as PaneKey]
         btn.setAttribute('aria-pressed', String(visible))
