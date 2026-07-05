@@ -70,6 +70,18 @@ import JsIcon from '../components/icons/JsIcon.astro'
         >
           縦並び
         </button>
+
+        <span id="instructor-toolbar-group" class="hidden items-center gap-1">
+          <span class="mx-2 h-4 w-px bg-slate-700" aria-hidden="true"></span>
+          <span class="mr-1 text-[11px] font-medium text-slate-500">講師モード:</span>
+          <button
+            id="btn-baseline"
+            type="button"
+            class="rounded-md bg-slate-700 px-3 py-1 text-sm font-medium text-slate-100 transition hover:bg-emerald-600 active:scale-95"
+          >
+            基準を記録
+          </button>
+        </span>
       </div>
 
       <!-- 4ペイン本体（HTML/CSS/JS/プレビュー）。ガターをドラッグして幅（縦並び時は高さ/幅）を変更できる。 -->
@@ -252,6 +264,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
     const instructor = createInstructorController({ editors, models, monaco })
     const btnInstructor = document.getElementById('btn-instructor')!
     const btnBaseline = document.getElementById('btn-baseline')!
+    const instructorToolbarGroup = document.getElementById('instructor-toolbar-group')!
     const syncInstructorUi = () => {
       const enabled = instructor.isEnabled()
       btnInstructor.setAttribute('aria-pressed', String(enabled))
@@ -259,7 +272,8 @@ import JsIcon from '../components/icons/JsIcon.astro'
       btnInstructor.classList.toggle('text-white', enabled)
       btnInstructor.classList.toggle('text-slate-400', !enabled)
       btnInstructor.classList.toggle('hover:text-emerald-400', !enabled)
-      btnBaseline.classList.toggle('hidden', !enabled)
+      instructorToolbarGroup.classList.toggle('hidden', !enabled)
+      instructorToolbarGroup.classList.toggle('flex', enabled)
     }
     instructor.setEnabled(loadInstructorMode())
     syncInstructorUi()
