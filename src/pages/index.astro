@@ -71,10 +71,21 @@ import JsIcon from '../components/icons/JsIcon.astro'
           縦並び
         </button>
 
+        <span class="mx-2 h-4 w-px bg-slate-700" aria-hidden="true"></span>
+
+        <span class="mr-1 text-[11px] font-medium text-slate-500">講師モード:</span>
+        <button
+          id="btn-instructor"
+          type="button"
+          class="rounded-md px-3 py-1 text-sm font-medium text-slate-400 transition hover:text-slate-200"
+          aria-pressed="false"
+        >
+          OFF
+        </button>
         <button
           id="btn-baseline"
           type="button"
-          class="hidden ml-2 rounded-md bg-slate-700 px-3 py-1 text-sm font-medium text-slate-100 transition hover:bg-emerald-600 active:scale-95"
+          class="hidden ml-1 rounded-md bg-slate-700 px-3 py-1 text-sm font-medium text-slate-100 transition hover:bg-emerald-600 active:scale-95"
         >
           基準を記録
         </button>
@@ -262,11 +273,12 @@ import JsIcon from '../components/icons/JsIcon.astro'
     const btnBaseline = document.getElementById('btn-baseline')!
     const syncInstructorUi = () => {
       const enabled = instructor.isEnabled()
+      btnInstructor.textContent = enabled ? 'ON' : 'OFF'
       btnInstructor.setAttribute('aria-pressed', String(enabled))
       btnInstructor.classList.toggle('bg-emerald-600', enabled)
       btnInstructor.classList.toggle('text-white', enabled)
       btnInstructor.classList.toggle('text-slate-400', !enabled)
-      btnInstructor.classList.toggle('hover:text-emerald-400', !enabled)
+      btnInstructor.classList.toggle('hover:text-slate-200', !enabled)
       btnBaseline.classList.toggle('hidden', !enabled)
     }
     instructor.setEnabled(loadInstructorMode())
