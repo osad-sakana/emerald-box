@@ -11,6 +11,7 @@ export interface LineChange {
 }
 
 // 巨大な入力での計算量爆発を避けるための安全弁（O(n*m)のDPテーブルサイズ上限）。
+// 超過時は意図的にハイライトなし（空配列）として安全側に倒す。
 const MAX_CELLS = 4_000_000
 
 function splitLines(text: string): string[] {

@@ -98,20 +98,29 @@ export function createInstructorController<
       const model = models[lang]
       const changes = diffLines(baseline[lang], model.getValue())
       const lineCount = Math.max(model.getLineCount(), 1)
-      const decorations: DecorationLike[] = changes.map((change) => {
+      // 連続削除はクランプ後に同じ行へ複数の deletedAt が集まるため、行単位で去重する。
+      const seenDeletedLines = new Set<number>()
+      const decorations: DecorationLike[] = []
+      for (const change of changes) {
         const line = Math.min(change.line, lineCount)
-        return {
-          range: new monaco.Range(line, 1, line, 1),
-          options:
-            change.kind === 'deletedAt'
-              ? { linesDecorationsClassName: 'eb-diff-deleted-gutter' }
-              : {
-                  isWholeLine: true,
-                  className: 'eb-diff-line',
-                  linesDecorationsClassName: 'eb-diff-gutter',
-                },
+        if (change.kind === 'deletedAt') {
+          if (seenDeletedLines.has(line)) continue
+          seenDeletedLines.add(line)
+          decorations.push({
+            range: new monaco.Range(line, 1, line, 1),
+            options: { linesDecorationsClassName: 'eb-diff-deleted-gutter' },
+          })
+        } else {
+          decorations.push({
+            range: new monaco.Range(line, 1, line, 1),
+            options: {
+              isWholeLine: true,
+              className: 'eb-diff-line',
+              linesDecorationsClassName: 'eb-diff-gutter',
+            },
+          })
         }
-      })
+      }
       collections[lang].set(decorations)
     }
   }
