@@ -11,6 +11,7 @@ interface DecorationOptionsLike {
   className?: string
   linesDecorationsClassName?: string
   inlineClassName?: string
+  beforeContentClassName?: string
 }
 
 interface DecorationLike {
@@ -122,10 +123,19 @@ export function createInstructorController<
           })
           const inlineRanges = diffInline(change.baselineText, change.currentText)
           for (const inlineRange of inlineRanges) {
-            decorations.push({
-              range: new monaco.Range(line, inlineRange.startColumn, line, inlineRange.endColumn),
-              options: { inlineClassName: 'eb-diff-inline' },
-            })
+            const range = new monaco.Range(
+              line,
+              inlineRange.startColumn,
+              line,
+              inlineRange.endColumn,
+            )
+            // deletionMarker はゼロ幅範囲のため inlineClassName ではDOMに描画されない。
+            // beforeContentClassName は空範囲でも擬似要素で描画されるためマーカー表示に使う。
+            decorations.push(
+              inlineRange.kind === 'deletionMarker'
+                ? { range, options: { beforeContentClassName: 'eb-diff-inline-deleted' } }
+                : { range, options: { inlineClassName: 'eb-diff-inline' } },
+            )
           }
         } else {
           decorations.push({

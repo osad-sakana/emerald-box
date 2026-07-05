@@ -71,4 +71,13 @@ const { title = 'Emerald Box — Web Sandbox' } = Astro.props
     background-color: rgba(16, 185, 129, 0.28);
     border-bottom: 2px solid rgba(16, 185, 129, 0.9);
   }
+  /* beforeContentClassName でゼロ幅位置に描画される、行内削除位置を示す縦線マーカー。 */
+  .eb-diff-inline-deleted::before {
+    content: '';
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    margin-bottom: -0.15em;
+    background-color: rgba(239, 68, 68, 0.9);
+  }
 </style>
