@@ -61,30 +61,63 @@ const iconUrl = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/favicon.svg`
 
     <span class="mx-1 h-5 w-px bg-slate-700" aria-hidden="true"></span>
 
-    <button
-      id="btn-baseline"
-      type="button"
-      class="hidden rounded-md bg-slate-700 px-3 py-1.5 text-sm font-semibold text-slate-100 transition hover:bg-emerald-600 active:scale-95"
-    >
-      基準を記録
-    </button>
-
-    <button
-      id="btn-instructor"
-      type="button"
-      aria-pressed="false"
-      class="rounded-md border border-slate-700 px-2.5 py-1.5 text-sm font-medium text-slate-400 transition hover:border-emerald-700 hover:text-emerald-400"
-    >
-      講師モード
-    </button>
-
-    <button
-      id="btn-credits"
-      type="button"
-      class="rounded-md border border-slate-700 px-2.5 py-1.5 text-sm font-medium text-slate-400 transition hover:border-emerald-700 hover:text-emerald-400"
-      aria-label="ライセンス表示"
-    >
-      ⓘ ライセンス
-    </button>
+    <!-- 講師モード・ライセンスをまとめたハンバーガーメニュー -->
+    <div class="relative">
+      <button
+        id="btn-menu"
+        type="button"
+        aria-haspopup="true"
+        aria-expanded="false"
+        aria-label="メニュー"
+        class="rounded-md border border-slate-700 px-2.5 py-1.5 text-sm font-medium text-slate-400 transition hover:border-emerald-700 hover:text-emerald-400"
+      >
+        ☰
+      </button>
+      <div
+        id="menu-dropdown"
+        class="hidden absolute right-0 top-full z-20 mt-2 w-36 flex-col gap-1 rounded-md border border-slate-700 bg-slate-900 p-1.5 shadow-lg"
+      >
+        <button
+          id="btn-instructor"
+          type="button"
+          aria-pressed="false"
+          class="w-full rounded-md px-3 py-1.5 text-left text-sm font-medium text-slate-400 transition hover:bg-slate-800 hover:text-emerald-400"
+        >
+          講師モード
+        </button>
+        <button
+          id="btn-credits"
+          type="button"
+          class="w-full rounded-md px-3 py-1.5 text-left text-sm font-medium text-slate-400 transition hover:bg-slate-800 hover:text-emerald-400"
+          aria-label="ライセンス表示"
+        >
+          ⓘ ライセンス
+        </button>
+      </div>
+    </div>
   </div>
 </header>
+
+<script>
+  const menuBtn = document.getElementById('btn-menu')!
+  const menuDropdown = document.getElementById('menu-dropdown')!
+
+  const setMenuOpen = (open: boolean) => {
+    menuBtn.setAttribute('aria-expanded', String(open))
+    menuDropdown.classList.toggle('hidden', !open)
+    menuDropdown.classList.toggle('flex', open)
+  }
+
+  menuBtn.addEventListener('click', (e) => {
+    e.stopPropagation()
+    setMenuOpen(menuDropdown.classList.contains('hidden'))
+  })
+  document.addEventListener('click', (e) => {
+    if (!menuDropdown.contains(e.target as Node) && e.target !== menuBtn) setMenuOpen(false)
+  })
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setMenuOpen(false)
+  })
+  // メニュー内の項目をクリックしたら閉じる（講師モード切替・ライセンス表示どちらも実行後に閉じてよい）。
+  menuDropdown.addEventListener('click', () => setMenuOpen(false))
+</script>
