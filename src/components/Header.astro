@@ -59,6 +59,25 @@ const iconUrl = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/favicon.svg`
       環境初期化
     </button>
 
+    <span class="mx-1 h-5 w-px bg-slate-700" aria-hidden="true"></span>
+
+    <button
+      id="btn-baseline"
+      type="button"
+      class="hidden rounded-md bg-slate-700 px-3 py-1.5 text-sm font-semibold text-slate-100 transition hover:bg-emerald-600 active:scale-95"
+    >
+      基準を記録
+    </button>
+
+    <button
+      id="btn-instructor"
+      type="button"
+      aria-pressed="false"
+      class="rounded-md border border-slate-700 px-2.5 py-1.5 text-sm font-medium text-slate-400 transition hover:border-emerald-700 hover:text-emerald-400"
+    >
+      講師モード
+    </button>
+
     <button
       id="btn-credits"
       type="button"

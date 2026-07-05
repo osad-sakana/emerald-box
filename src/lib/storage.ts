@@ -10,6 +10,7 @@ const PANELS_KEY = 'emerald-box:panels:v1'
 const SIZES_KEY = 'emerald-box:sizes:v1'
 const LAYOUT_KEY = 'emerald-box:layout:v1'
 const EDITOR_GROUP_SIZE_KEY = 'emerald-box:editor-group-size:v1'
+const INSTRUCTOR_KEY = 'emerald-box:instructor:v1'
 
 // ペイン全体の並び方向。
 export type LayoutMode = 'horizontal' | 'vertical'
@@ -95,6 +96,7 @@ export function clearCode(): void {
     localStorage.removeItem(SIZES_KEY)
     localStorage.removeItem(LAYOUT_KEY)
     localStorage.removeItem(EDITOR_GROUP_SIZE_KEY)
+    localStorage.removeItem(INSTRUCTOR_KEY)
   } catch (error) {
     console.error('リセットに失敗しました:', error)
   }
@@ -202,6 +204,26 @@ export function saveEditorGroupSize(size: number): void {
     localStorage.setItem(EDITOR_GROUP_SIZE_KEY, String(size))
   } catch (error) {
     console.error('エディタグループサイズの保存に失敗しました:', error)
+  }
+}
+
+// 講師モードのON/OFFの読み込み。不正な値はOFF（既定）にフォールバック。
+export function loadInstructorMode(): boolean {
+  if (typeof localStorage === 'undefined') return false
+  try {
+    return localStorage.getItem(INSTRUCTOR_KEY) === 'true'
+  } catch (error) {
+    console.error('講師モードの読み込みに失敗しました:', error)
+    return false
+  }
+}
+
+export function saveInstructorMode(enabled: boolean): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(INSTRUCTOR_KEY, String(enabled))
+  } catch (error) {
+    console.error('講師モードの保存に失敗しました:', error)
   }
 }
 

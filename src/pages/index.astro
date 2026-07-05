@@ -189,6 +189,8 @@ import JsIcon from '../components/icons/JsIcon.astro'
     saveLayout,
     loadEditorGroupSize,
     saveEditorGroupSize,
+    loadInstructorMode,
+    saveInstructorMode,
     debounce,
     PANE_KEYS,
     type CodeState,
@@ -199,6 +201,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
     type PaneKey,
   } from '../lib/storage'
   import { PreviewController } from '../lib/preview'
+  import { createInstructorController } from '../lib/instructor-mode'
 
   // Monaco を CDN から読み込む。
   loader.config({
@@ -244,6 +247,31 @@ import JsIcon from '../components/icons/JsIcon.astro'
 
     const host = document.getElementById('preview-host')!
     const preview = new PreviewController(host)
+
+    // 講師モード: 文字拡大＋基準からの変更行ハイライト（講師の手元マシンでのみ使う想定）。
+    const instructor = createInstructorController({ editors, models, monaco })
+    const btnInstructor = document.getElementById('btn-instructor')!
+    const btnBaseline = document.getElementById('btn-baseline')!
+    const syncInstructorUi = () => {
+      const enabled = instructor.isEnabled()
+      btnInstructor.setAttribute('aria-pressed', String(enabled))
+      btnInstructor.classList.toggle('bg-emerald-600', enabled)
+      btnInstructor.classList.toggle('text-white', enabled)
+      btnInstructor.classList.toggle('text-slate-400', !enabled)
+      btnInstructor.classList.toggle('hover:text-emerald-400', !enabled)
+      btnBaseline.classList.toggle('hidden', !enabled)
+    }
+    instructor.setEnabled(loadInstructorMode())
+    syncInstructorUi()
+    btnInstructor.addEventListener('click', () => {
+      const next = !instructor.isEnabled()
+      instructor.setEnabled(next)
+      saveInstructorMode(next)
+      syncInstructorUi()
+    })
+    btnBaseline.addEventListener('click', () => {
+      instructor.captureBaseline()
+    })
 
     const getState = (): CodeState => ({
       html: models.html.getValue(),
@@ -514,17 +542,25 @@ import JsIcon from '../components/icons/JsIcon.astro'
       })
     }
 
+    // 講師モードの差分ハイライト再計算も既存の500msデバウンスに乗せる。
+    const refreshInstructorDiff = debounce(() => {
+      instructor.refreshDecorations()
+    }, 500)
+
     // 各モデルの変更を監視。HTML/CSS は即時にプレビュー反映、JS は保存のみ。
     models.html.onDidChangeContent(() => {
       preview.renderMarkup(getState())
       persist()
+      refreshInstructorDiff()
     })
     models.css.onDidChangeContent(() => {
       preview.renderMarkup(getState())
       persist()
+      refreshInstructorDiff()
     })
     models.javascript.onDidChangeContent(() => {
       persist()
+      refreshInstructorDiff()
     })
 
     // ▶ JS実行
