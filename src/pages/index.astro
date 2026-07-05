@@ -339,7 +339,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
       // CSSの仕様上「空き領域 × 比率」しか広がらず、残りが空白になってしまう。
       // 単独表示のときだけ flex-grow を 1 に上書きして画面いっぱいに広げる。
       applySizes()
-      const visibleParties =
+      const visibleGroups =
         layoutMode === 'vertical'
           ? [
               ...(anyEditorVisible ? [editorGroupEl] : []),
@@ -348,8 +348,16 @@ import JsIcon from '../components/icons/JsIcon.astro'
           : PANE_KEYS.filter((key) => panels[key]).map(
               (key) => document.getElementById(`pane-${key}`)!
             )
-      if (visibleParties.length === 1) {
-        visibleParties[0].style.flex = '1 1 0%'
+      if (visibleGroups.length === 1) {
+        visibleGroups[0].style.flex = '1 1 0%'
+      }
+      // 縦並び時は editor-group 内部（HTML/CSS/JS の縦方向）も同じ問題が起こりうるため、
+      // 表示中の言語ペインが1つだけならそちらも広げる。
+      if (layoutMode === 'vertical') {
+        const visibleLangs = LANGS.filter((lang) => panels[lang])
+        if (visibleLangs.length === 1) {
+          document.getElementById(`pane-${visibleLangs[0]}`)!.style.flex = '1 1 0%'
+        }
       }
       for (const btn of toggleBtns) {
         const visible = panels[btn.dataset.pane as PaneKey]
@@ -401,7 +409,6 @@ import JsIcon from '../components/icons/JsIcon.astro'
         btn.classList.toggle('hover:text-slate-200', !active)
       }
 
-      applySizes()
       syncPanels()
       for (const key of PANE_KEYS) relayout(key)
     }
