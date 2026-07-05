@@ -56,4 +56,15 @@ const { title = 'Emerald Box — Web Sandbox' } = Astro.props
     margin: 0;
     height: 100%;
   }
+
+  /* 講師モード: 基準からの変更行ハイライト */
+  .eb-diff-line {
+    background-color: rgba(16, 185, 129, 0.12);
+  }
+  .eb-diff-gutter {
+    border-left: 3px solid rgba(16, 185, 129, 0.8);
+  }
+  .eb-diff-deleted-gutter {
+    border-left: 3px solid rgba(239, 68, 68, 0.8);
+  }
 </style>

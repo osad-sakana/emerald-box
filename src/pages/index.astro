@@ -70,6 +70,18 @@ import JsIcon from '../components/icons/JsIcon.astro'
         >
           縦並び
         </button>
+
+        <span id="instructor-toolbar-group" class="hidden items-center gap-1">
+          <span class="mx-2 h-4 w-px bg-slate-700" aria-hidden="true"></span>
+          <span class="mr-1 text-[11px] font-medium text-slate-500">講師モード:</span>
+          <button
+            id="btn-baseline"
+            type="button"
+            class="rounded-md bg-slate-700 px-3 py-1 text-sm font-medium text-slate-100 transition hover:bg-emerald-600 active:scale-95"
+          >
+            基準を記録
+          </button>
+        </span>
       </div>
 
       <!-- 4ペイン本体（HTML/CSS/JS/プレビュー）。ガターをドラッグして幅（縦並び時は高さ/幅）を変更できる。 -->
@@ -189,6 +201,8 @@ import JsIcon from '../components/icons/JsIcon.astro'
     saveLayout,
     loadEditorGroupSize,
     saveEditorGroupSize,
+    loadInstructorMode,
+    saveInstructorMode,
     debounce,
     PANE_KEYS,
     type CodeState,
@@ -199,6 +213,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
     type PaneKey,
   } from '../lib/storage'
   import { PreviewController } from '../lib/preview'
+  import { createInstructorController } from '../lib/instructor-mode'
 
   // Monaco を CDN から読み込む。
   loader.config({
@@ -244,6 +259,33 @@ import JsIcon from '../components/icons/JsIcon.astro'
 
     const host = document.getElementById('preview-host')!
     const preview = new PreviewController(host)
+
+    // 講師モード: 文字拡大＋基準からの変更行ハイライト（講師の手元マシンでのみ使う想定）。
+    const instructor = createInstructorController({ editors, models, monaco })
+    const btnInstructor = document.getElementById('btn-instructor')!
+    const btnBaseline = document.getElementById('btn-baseline')!
+    const instructorToolbarGroup = document.getElementById('instructor-toolbar-group')!
+    const syncInstructorUi = () => {
+      const enabled = instructor.isEnabled()
+      btnInstructor.setAttribute('aria-pressed', String(enabled))
+      btnInstructor.classList.toggle('bg-emerald-600', enabled)
+      btnInstructor.classList.toggle('text-white', enabled)
+      btnInstructor.classList.toggle('text-slate-400', !enabled)
+      btnInstructor.classList.toggle('hover:text-emerald-400', !enabled)
+      instructorToolbarGroup.classList.toggle('hidden', !enabled)
+      instructorToolbarGroup.classList.toggle('flex', enabled)
+    }
+    instructor.setEnabled(loadInstructorMode())
+    syncInstructorUi()
+    btnInstructor.addEventListener('click', () => {
+      const next = !instructor.isEnabled()
+      instructor.setEnabled(next)
+      saveInstructorMode(next)
+      syncInstructorUi()
+    })
+    btnBaseline.addEventListener('click', () => {
+      instructor.captureBaseline()
+    })
 
     const getState = (): CodeState => ({
       html: models.html.getValue(),
@@ -514,17 +556,25 @@ import JsIcon from '../components/icons/JsIcon.astro'
       })
     }
 
+    // 講師モードの差分ハイライト再計算も既存の500msデバウンスに乗せる。
+    const refreshInstructorDiff = debounce(() => {
+      instructor.refreshDecorations()
+    }, 500)
+
     // 各モデルの変更を監視。HTML/CSS は即時にプレビュー反映、JS は保存のみ。
     models.html.onDidChangeContent(() => {
       preview.renderMarkup(getState())
       persist()
+      refreshInstructorDiff()
     })
     models.css.onDidChangeContent(() => {
       preview.renderMarkup(getState())
       persist()
+      refreshInstructorDiff()
     })
     models.javascript.onDidChangeContent(() => {
       persist()
+      refreshInstructorDiff()
     })
 
     // ▶ JS実行
