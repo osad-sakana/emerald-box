@@ -1,6 +1,6 @@
 // 講師モードのMonaco配線（文字拡大・スナップショット基準の差分ハイライト）をまとめたコントローラ。
 import type { EditorLang } from './storage'
-import { diffLines } from './diff'
+import { diffInline, diffLines } from './diff'
 
 const NORMAL_FONT_SIZE = 14
 const LARGE_FONT_SIZE = 20
@@ -10,6 +10,7 @@ interface DecorationOptionsLike {
   isWholeLine?: boolean
   className?: string
   linesDecorationsClassName?: string
+  inlineClassName?: string
 }
 
 interface DecorationLike {
@@ -110,6 +111,22 @@ export function createInstructorController<
             range: new monaco.Range(line, 1, line, 1),
             options: { linesDecorationsClassName: 'eb-diff-deleted-gutter' },
           })
+        } else if (change.kind === 'modified') {
+          decorations.push({
+            range: new monaco.Range(line, 1, line, 1),
+            options: {
+              isWholeLine: true,
+              className: 'eb-diff-line',
+              linesDecorationsClassName: 'eb-diff-gutter',
+            },
+          })
+          const inlineRanges = diffInline(change.baselineText, change.currentText)
+          for (const inlineRange of inlineRanges) {
+            decorations.push({
+              range: new monaco.Range(line, inlineRange.startColumn, line, inlineRange.endColumn),
+              options: { inlineClassName: 'eb-diff-inline' },
+            })
+          }
         } else {
           decorations.push({
             range: new monaco.Range(line, 1, line, 1),
