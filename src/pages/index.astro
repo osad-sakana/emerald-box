@@ -312,16 +312,22 @@ import JsIcon from '../components/icons/JsIcon.astro'
     // ライブプレビューはHTML/CSSのみでJSを含まないため、JSペインに内容が
     // あるのに未実行の間は「▶ JS実行」ボタンを強調して気づかせる。
     const btnRun = document.getElementById('btn-run')!
+    const jsStatusEl = document.getElementById('js-status')!
     let jsApplied = false
+    // 一度でも「JS実行」を押したら、以後ボタンラベルは「再実行」に固定する。
+    let hasRunJs = false
     const updateRunButtonHint = () => {
       const stale = !jsApplied && models.javascript.getValue().trim() !== ''
       btnRun.classList.toggle('ring-2', stale)
       btnRun.classList.toggle('ring-amber-400', stale)
       btnRun.title = stale ? 'JSが未実行です。押すとHTML内のonclickなどが有効になります' : ''
+      btnRun.textContent = hasRunJs ? '↻ 再実行' : '▶ JS実行'
+      jsStatusEl.classList.toggle('hidden', !jsApplied)
     }
     // jsApplied の更新とボタンのヒント表示更新を常にペアで行うためのヘルパー。
     const setJsApplied = (applied: boolean) => {
       jsApplied = applied
+      if (applied) hasRunJs = true
       updateRunButtonHint()
     }
 
