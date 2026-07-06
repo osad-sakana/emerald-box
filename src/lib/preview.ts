@@ -3,10 +3,21 @@ import type { CodeState } from './storage'
 
 const TAILWIND_CDN = 'https://cdn.tailwindcss.com'
 
+// includeJs=false の間、HTML内の onclick 等から未定義関数を呼ぶと
+// ReferenceError が素の Uncaught として出て分かりづらいため、
+// 「▶ JS実行」を押すよう案内する警告に差し替える。
+const LIVE_PREVIEW_GUARD = `<script>
+window.addEventListener('error', function (e) {
+  console.warn('JSはまだ実行されていません。「▶ JS実行」を押すとHTMLのonclickなどから呼び出す関数が有効になります。')
+  e.preventDefault()
+})
+<\/script>`
+
 // プレビュー用のHTMLドキュメントを組み立てる。
 // includeJs=false のときは <script> を埋め込まない（HTML/CSSのみ反映）。
 function buildDocument(state: CodeState, includeJs: boolean): string {
   const js = includeJs ? `<script>\n${state.javascript}\n<\/script>` : ''
+  const guard = includeJs ? '' : LIVE_PREVIEW_GUARD
   // ユーザーCSSはbody末尾に置く: Tailwind CDNは実行後に自身の生成CSSを
   // <head>末尾へ追加するため、<head>内に置くと同じ詳細度のセレクタ（h1等）が
   // Preflightに上書きされてしまう。body末尾ならDOM順序で必ず後に来て勝つ。
@@ -18,6 +29,7 @@ function buildDocument(state: CodeState, includeJs: boolean): string {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="${TAILWIND_CDN}"><\/script>
+  ${guard}
 </head>
 <body>
 ${state.html}
