@@ -50,8 +50,8 @@ export const DEFAULT_SIZES: PanelSizes = {
   preview: 1,
 }
 
-// 初期レイアウトは横並び（従来通り）。
-export const DEFAULT_LAYOUT: LayoutMode = 'horizontal'
+// 初期レイアウトは縦並び。
+export const DEFAULT_LAYOUT: LayoutMode = 'vertical'
 
 // 縦並び時、エディタ3つ全体とプレビューの相対サイズ（flex-grow 値）。
 // プレビューの DEFAULT_SIZES と同じ 1 にすることで、初期状態（HTML+プレビューのみ表示）の
@@ -168,7 +168,8 @@ export function loadLayout(): LayoutMode {
   if (typeof localStorage === 'undefined') return DEFAULT_LAYOUT
   try {
     const raw = localStorage.getItem(LAYOUT_KEY)
-    return raw === 'vertical' ? 'vertical' : DEFAULT_LAYOUT
+    if (raw === 'vertical' || raw === 'horizontal') return raw
+    return DEFAULT_LAYOUT
   } catch (error) {
     console.error('レイアウトモードの読み込みに失敗しました:', error)
     return DEFAULT_LAYOUT
