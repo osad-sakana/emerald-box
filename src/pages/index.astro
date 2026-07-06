@@ -319,6 +319,11 @@ import JsIcon from '../components/icons/JsIcon.astro'
       btnRun.classList.toggle('ring-amber-400', stale)
       btnRun.title = stale ? 'JSが未実行です。押すとHTML内のonclickなどが有効になります' : ''
     }
+    // jsApplied の更新とボタンのヒント表示更新を常にペアで行うためのヘルパー。
+    const setJsApplied = (applied: boolean) => {
+      jsApplied = applied
+      updateRunButtonHint()
+    }
 
     // 初回プレビュー（HTML/CSS のみ）。
     preview.renderMarkup(getState())
@@ -578,21 +583,18 @@ import JsIcon from '../components/icons/JsIcon.astro'
     // その都度「JS未実行」の状態に戻す。
     models.html.onDidChangeContent(() => {
       preview.renderMarkup(getState())
-      jsApplied = false
-      updateRunButtonHint()
+      setJsApplied(false)
       persist()
       refreshInstructorDiff()
     })
     models.css.onDidChangeContent(() => {
       preview.renderMarkup(getState())
-      jsApplied = false
-      updateRunButtonHint()
+      setJsApplied(false)
       persist()
       refreshInstructorDiff()
     })
     models.javascript.onDidChangeContent(() => {
-      jsApplied = false
-      updateRunButtonHint()
+      setJsApplied(false)
       persist()
       refreshInstructorDiff()
     })
@@ -600,15 +602,13 @@ import JsIcon from '../components/icons/JsIcon.astro'
     // ▶ JS実行
     btnRun.addEventListener('click', () => {
       preview.runWithJs(getState())
-      jsApplied = true
-      updateRunButtonHint()
+      setJsApplied(true)
     })
 
     // ■ 強制終了: iframe を破棄・再生成して HTML/CSS のみ再描画。
     document.getElementById('btn-stop')!.addEventListener('click', () => {
       preview.forceStop(getState())
-      jsApplied = false
-      updateRunButtonHint()
+      setJsApplied(false)
     })
 
     // 環境初期化: localStorage をクリアしてリロード。
