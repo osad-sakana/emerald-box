@@ -309,8 +309,20 @@ import JsIcon from '../components/icons/JsIcon.astro'
       flashSaved()
     }, 500)
 
+    // ライブプレビューはHTML/CSSのみでJSを含まないため、JSペインに内容が
+    // あるのに未実行の間は「▶ JS実行」ボタンを強調して気づかせる。
+    const btnRun = document.getElementById('btn-run')!
+    let jsApplied = false
+    const updateRunButtonHint = () => {
+      const stale = !jsApplied && models.javascript.getValue().trim() !== ''
+      btnRun.classList.toggle('ring-2', stale)
+      btnRun.classList.toggle('ring-amber-400', stale)
+      btnRun.title = stale ? 'JSが未実行です。押すとHTML内のonclickなどが有効になります' : ''
+    }
+
     // 初回プレビュー（HTML/CSS のみ）。
     preview.renderMarkup(getState())
+    updateRunButtonHint()
 
     // ペインの表示/非表示・相対サイズ・並び方向。いずれも localStorage に永続化する。
     let panels: PanelState = loadPanels()
@@ -562,29 +574,41 @@ import JsIcon from '../components/icons/JsIcon.astro'
     }, 500)
 
     // 各モデルの変更を監視。HTML/CSS は即時にプレビュー反映、JS は保存のみ。
+    // HTML/CSSの変更でプレビューを再描画するとJSは含まれなくなるため、
+    // その都度「JS未実行」の状態に戻す。
     models.html.onDidChangeContent(() => {
       preview.renderMarkup(getState())
+      jsApplied = false
+      updateRunButtonHint()
       persist()
       refreshInstructorDiff()
     })
     models.css.onDidChangeContent(() => {
       preview.renderMarkup(getState())
+      jsApplied = false
+      updateRunButtonHint()
       persist()
       refreshInstructorDiff()
     })
     models.javascript.onDidChangeContent(() => {
+      jsApplied = false
+      updateRunButtonHint()
       persist()
       refreshInstructorDiff()
     })
 
     // ▶ JS実行
-    document.getElementById('btn-run')!.addEventListener('click', () => {
+    btnRun.addEventListener('click', () => {
       preview.runWithJs(getState())
+      jsApplied = true
+      updateRunButtonHint()
     })
 
     // ■ 強制終了: iframe を破棄・再生成して HTML/CSS のみ再描画。
     document.getElementById('btn-stop')!.addEventListener('click', () => {
       preview.forceStop(getState())
+      jsApplied = false
+      updateRunButtonHint()
     })
 
     // 環境初期化: localStorage をクリアしてリロード。
