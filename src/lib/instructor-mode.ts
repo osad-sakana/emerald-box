@@ -1,9 +1,6 @@
 // 講師モードのMonaco配線（文字拡大・スナップショット基準の差分ハイライト）をまとめたコントローラ。
-import type { EditorLang } from './storage'
+import type { EditorLang, FontSizes } from './storage'
 import { diffInline, diffLines } from './diff'
-
-const NORMAL_FONT_SIZE = 14
-const LARGE_FONT_SIZE = 20
 const LANGS: EditorLang[] = ['html', 'css', 'javascript']
 
 interface DecorationOptionsLike {
@@ -46,6 +43,8 @@ interface ModelLike {
 export interface InstructorController {
   isEnabled(): boolean
   setEnabled(enabled: boolean): void
+  setFontSizes(sizes: FontSizes): void
+  getCurrentFontSize(): number
   hasBaseline(): boolean
   captureBaseline(): void
   refreshDecorations(): void
@@ -60,6 +59,7 @@ interface CreateInstructorControllerParams<
   editors: Record<EditorLang, TEditor>
   models: Record<EditorLang, TModel>
   monaco: TMonaco
+  initialFontSizes: FontSizes
 }
 
 export function createInstructorController<
@@ -70,8 +70,10 @@ export function createInstructorController<
   editors,
   models,
   monaco,
+  initialFontSizes,
 }: CreateInstructorControllerParams<TEditor, TModel, TMonaco>): InstructorController {
   let enabled = false
+  let fontSizes = { ...initialFontSizes }
   let baseline: Record<EditorLang, string> | null = null
   const collections: Record<EditorLang, DecorationsCollectionLike> = {
     html: editors.html.createDecorationsCollection(),
@@ -84,7 +86,7 @@ export function createInstructorController<
   }
 
   const updateFontSize = () => {
-    const fontSize = enabled ? LARGE_FONT_SIZE : NORMAL_FONT_SIZE
+    const fontSize = enabled ? fontSizes.instructor : fontSizes.normal
     for (const lang of LANGS) {
       editors[lang].updateOptions({ fontSize })
       editors[lang].layout()
@@ -154,6 +156,11 @@ export function createInstructorController<
 
   return {
     isEnabled: () => enabled,
+    setFontSizes: (sizes: FontSizes) => {
+      fontSizes = { ...sizes }
+      updateFontSize()
+    },
+    getCurrentFontSize: () => (enabled ? fontSizes.instructor : fontSizes.normal),
     setEnabled: (next: boolean) => {
       enabled = next
       updateFontSize()

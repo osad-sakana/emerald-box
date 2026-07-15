@@ -71,6 +71,30 @@ import JsIcon from '../components/icons/JsIcon.astro'
           横並び
         </button>
 
+        <span class="mx-2 h-4 w-px bg-slate-700" aria-hidden="true"></span>
+
+        <span class="mr-1 text-[11px] font-medium text-slate-500">文字サイズ:</span>
+        <button
+          id="btn-font-decrease"
+          type="button"
+          class="rounded-md px-2 py-1 text-sm font-medium text-slate-400 transition hover:text-slate-200 active:scale-95"
+          title="文字を小さくする"
+        >
+          −
+        </button>
+        <span
+          id="font-size-display"
+          class="min-w-[2.5rem] text-center text-xs tabular-nums text-slate-300"
+        >14</span>
+        <button
+          id="btn-font-increase"
+          type="button"
+          class="rounded-md px-2 py-1 text-sm font-medium text-slate-400 transition hover:text-slate-200 active:scale-95"
+          title="文字を大きくする"
+        >
+          +
+        </button>
+
         <span id="instructor-toolbar-group" class="hidden items-center gap-1">
           <span class="mx-2 h-4 w-px bg-slate-700" aria-hidden="true"></span>
           <span class="mr-1 text-[11px] font-medium text-slate-500">講師モード:</span>
@@ -203,6 +227,11 @@ import JsIcon from '../components/icons/JsIcon.astro'
     saveEditorGroupSize,
     loadInstructorMode,
     saveInstructorMode,
+    loadFontSizes,
+    saveFontSizes,
+    MIN_FONT_SIZE,
+    MAX_FONT_SIZE,
+    FONT_SIZE_STEP,
     debounce,
     PANE_KEYS,
     type CodeState,
@@ -211,6 +240,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
     type LayoutMode,
     type EditorLang,
     type PaneKey,
+    type FontSizes,
   } from '../lib/storage'
   import { PreviewController } from '../lib/preview'
   import { createInstructorController } from '../lib/instructor-mode'
@@ -229,6 +259,9 @@ import JsIcon from '../components/icons/JsIcon.astro'
     const monaco = await loader.init()
 
     const initial = loadCode()
+    let fontSizes: FontSizes = loadFontSizes()
+    const isInstructorInitial = loadInstructorMode()
+    const initialFontSize = isInstructorInitial ? fontSizes.instructor : fontSizes.normal
 
     // HTML/CSS/JS それぞれに独立したモデルを用意する。
     const models: Record<EditorLang, ReturnType<typeof monaco.editor.createModel>> =
@@ -244,7 +277,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
         model: models[lang],
         theme: 'vs-dark',
         automaticLayout: true,
-        fontSize: 14,
+        fontSize: initialFontSize,
         fontFamily: '"0xProto", ui-monospace, monospace',
         minimap: { enabled: false },
         scrollBeyondLastLine: false,
@@ -261,7 +294,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
     const preview = new PreviewController(host)
 
     // 講師モード: 文字拡大＋基準からの変更行ハイライト（講師の手元マシンでのみ使う想定）。
-    const instructor = createInstructorController({ editors, models, monaco })
+    const instructor = createInstructorController({ editors, models, monaco, initialFontSizes: fontSizes })
     const btnInstructor = document.getElementById('btn-instructor')!
     const btnBaseline = document.getElementById('btn-baseline')!
     const instructorToolbarGroup = document.getElementById('instructor-toolbar-group')!
@@ -275,17 +308,46 @@ import JsIcon from '../components/icons/JsIcon.astro'
       instructorToolbarGroup.classList.toggle('hidden', !enabled)
       instructorToolbarGroup.classList.toggle('flex', enabled)
     }
-    instructor.setEnabled(loadInstructorMode())
+    instructor.setEnabled(isInstructorInitial)
     syncInstructorUi()
     btnInstructor.addEventListener('click', () => {
       const next = !instructor.isEnabled()
       instructor.setEnabled(next)
       saveInstructorMode(next)
       syncInstructorUi()
+      syncFontSizeUi()
     })
     btnBaseline.addEventListener('click', () => {
       instructor.captureBaseline()
     })
+
+    // フォントサイズ変更。
+    const fontSizeDisplay = document.getElementById('font-size-display')!
+    const btnFontDecrease = document.getElementById('btn-font-decrease')! as HTMLButtonElement
+    const btnFontIncrease = document.getElementById('btn-font-increase')! as HTMLButtonElement
+    const syncFontSizeUi = () => {
+      const current = instructor.getCurrentFontSize()
+      fontSizeDisplay.textContent = `${current}px`
+      const atMin = current <= MIN_FONT_SIZE
+      const atMax = current >= MAX_FONT_SIZE
+      btnFontDecrease.classList.toggle('opacity-30', atMin)
+      btnFontDecrease.disabled = atMin
+      btnFontIncrease.classList.toggle('opacity-30', atMax)
+      btnFontIncrease.disabled = atMax
+    }
+    syncFontSizeUi()
+    const changeFontSize = (delta: number) => {
+      const current = instructor.getCurrentFontSize()
+      const next = Math.max(MIN_FONT_SIZE, Math.min(MAX_FONT_SIZE, current + delta))
+      if (next === current) return
+      const key = instructor.isEnabled() ? 'instructor' : 'normal'
+      fontSizes = { ...fontSizes, [key]: next }
+      saveFontSizes(fontSizes)
+      instructor.setFontSizes(fontSizes)
+      syncFontSizeUi()
+    }
+    btnFontDecrease.addEventListener('click', () => changeFontSize(-FONT_SIZE_STEP))
+    btnFontIncrease.addEventListener('click', () => changeFontSize(FONT_SIZE_STEP))
 
     const getState = (): CodeState => ({
       html: models.html.getValue(),
