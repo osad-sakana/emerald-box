@@ -308,7 +308,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
       instructorToolbarGroup.classList.toggle('hidden', !enabled)
       instructorToolbarGroup.classList.toggle('flex', enabled)
     }
-    instructor.setEnabled(loadInstructorMode())
+    instructor.setEnabled(isInstructorInitial)
     syncInstructorUi()
     btnInstructor.addEventListener('click', () => {
       const next = !instructor.isEnabled()
@@ -323,13 +323,17 @@ import JsIcon from '../components/icons/JsIcon.astro'
 
     // フォントサイズ変更。
     const fontSizeDisplay = document.getElementById('font-size-display')!
-    const btnFontDecrease = document.getElementById('btn-font-decrease')!
-    const btnFontIncrease = document.getElementById('btn-font-increase')!
+    const btnFontDecrease = document.getElementById('btn-font-decrease')! as HTMLButtonElement
+    const btnFontIncrease = document.getElementById('btn-font-increase')! as HTMLButtonElement
     const syncFontSizeUi = () => {
       const current = instructor.getCurrentFontSize()
       fontSizeDisplay.textContent = `${current}px`
-      btnFontDecrease.classList.toggle('opacity-30', current <= MIN_FONT_SIZE)
-      btnFontIncrease.classList.toggle('opacity-30', current >= MAX_FONT_SIZE)
+      const atMin = current <= MIN_FONT_SIZE
+      const atMax = current >= MAX_FONT_SIZE
+      btnFontDecrease.classList.toggle('opacity-30', atMin)
+      btnFontDecrease.disabled = atMin
+      btnFontIncrease.classList.toggle('opacity-30', atMax)
+      btnFontIncrease.disabled = atMax
     }
     syncFontSizeUi()
     const changeFontSize = (delta: number) => {
