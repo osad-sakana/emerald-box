@@ -11,6 +11,7 @@ const SIZES_KEY = 'emerald-box:sizes:v1'
 const LAYOUT_KEY = 'emerald-box:layout:v1'
 const EDITOR_GROUP_SIZE_KEY = 'emerald-box:editor-group-size:v1'
 const INSTRUCTOR_KEY = 'emerald-box:instructor:v1'
+const FONT_SIZE_KEY = 'emerald-box:font-size:v1'
 
 // ペイン全体の並び方向。
 export type LayoutMode = 'horizontal' | 'vertical'
@@ -58,6 +59,20 @@ export const DEFAULT_LAYOUT: LayoutMode = 'vertical'
 // 見た目が横並び時と一致する。
 export const DEFAULT_EDITOR_GROUP_SIZE = 1
 
+export const MIN_FONT_SIZE = 10
+export const MAX_FONT_SIZE = 32
+export const FONT_SIZE_STEP = 2
+
+export interface FontSizes {
+  normal: number
+  instructor: number
+}
+
+export const DEFAULT_FONT_SIZES: FontSizes = {
+  normal: 14,
+  instructor: 20,
+}
+
 // immutableに状態を読み込む。壊れたデータはデフォルトにフォールバック。
 export function loadCode(): CodeState {
   if (typeof localStorage === 'undefined') return { ...DEFAULT_CODE }
@@ -97,6 +112,7 @@ export function clearCode(): void {
     localStorage.removeItem(LAYOUT_KEY)
     localStorage.removeItem(EDITOR_GROUP_SIZE_KEY)
     localStorage.removeItem(INSTRUCTOR_KEY)
+    localStorage.removeItem(FONT_SIZE_KEY)
   } catch (error) {
     console.error('リセットに失敗しました:', error)
   }
@@ -225,6 +241,36 @@ export function saveInstructorMode(enabled: boolean): void {
     localStorage.setItem(INSTRUCTOR_KEY, String(enabled))
   } catch (error) {
     console.error('講師モードの保存に失敗しました:', error)
+  }
+}
+
+// フォントサイズの読み込み。不正値・範囲外はデフォルトにフォールバック。
+export function loadFontSizes(): FontSizes {
+  if (typeof localStorage === 'undefined') return { ...DEFAULT_FONT_SIZES }
+  const clamp = (v: unknown, fallback: number): number => {
+    if (typeof v !== 'number' || !Number.isFinite(v)) return fallback
+    return Math.max(MIN_FONT_SIZE, Math.min(MAX_FONT_SIZE, v))
+  }
+  try {
+    const raw = localStorage.getItem(FONT_SIZE_KEY)
+    if (!raw) return { ...DEFAULT_FONT_SIZES }
+    const parsed = JSON.parse(raw) as Partial<FontSizes>
+    return {
+      normal: clamp(parsed.normal, DEFAULT_FONT_SIZES.normal),
+      instructor: clamp(parsed.instructor, DEFAULT_FONT_SIZES.instructor),
+    }
+  } catch (error) {
+    console.error('フォントサイズの読み込みに失敗しました:', error)
+    return { ...DEFAULT_FONT_SIZES }
+  }
+}
+
+export function saveFontSizes(sizes: FontSizes): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(FONT_SIZE_KEY, JSON.stringify(sizes))
+  } catch (error) {
+    console.error('フォントサイズの保存に失敗しました:', error)
   }
 }
 
