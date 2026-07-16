@@ -115,4 +115,29 @@ describe('diffInline', () => {
       { kind: 'changed', startColumn: 6, endColumn: 7 },
     ])
   })
+
+  it('絵文字（サロゲートペア）の後に文字が変更された場合はUTF-16オフセットで範囲を返す', () => {
+    expect(diffInline('😀abc', '😀aXc')).toEqual([
+      { kind: 'changed', startColumn: 4, endColumn: 5 },
+    ])
+  })
+
+  it('絵文字自体が別の絵文字に変更された場合は2コードユニット分の範囲を返す', () => {
+    expect(diffInline('abc😀def', 'abc🎉def')).toEqual([
+      { kind: 'changed', startColumn: 4, endColumn: 6 },
+    ])
+  })
+
+  it('絵文字の前後に変更がある場合はそれぞれ独立した範囲をUTF-16オフセットで返す', () => {
+    expect(diffInline('1a😀b2', '9a😀b8')).toEqual([
+      { kind: 'changed', startColumn: 1, endColumn: 2 },
+      { kind: 'changed', startColumn: 6, endColumn: 7 },
+    ])
+  })
+
+  it('絵文字の後で文字が純粋に削除された場合はUTF-16オフセットでdeletionMarkerを返す', () => {
+    expect(diffInline('😀abc', '😀a')).toEqual([
+      { kind: 'deletionMarker', startColumn: 4, endColumn: 4 },
+    ])
+  })
 })

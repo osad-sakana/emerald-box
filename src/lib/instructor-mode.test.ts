@@ -205,6 +205,24 @@ describe('createInstructorController', () => {
     expect(inlineDecoration).toBeDefined()
   })
 
+  it('refreshDecorations() で行内の文字が純粋削除された場合はdeletionMarkerのデコレーションが設定される', () => {
+    ctx.models.javascript.setValue('const abc = 1')
+    ctx.controller.captureBaseline()
+    ctx.controller.setEnabled(true)
+    ctx.models.javascript.setValue('const a = 1')
+
+    ctx.editors.javascript.collection.set.mockClear()
+    ctx.controller.refreshDecorations()
+
+    const decorations = ctx.editors.javascript.collection.set.mock.calls[0][0]
+    const deletionMarkerDecoration = decorations.find(
+      (d: { options: { beforeContentClassName?: string } }) =>
+        d.options.beforeContentClassName === 'eb-diff-inline-deleted',
+    )
+    expect(deletionMarkerDecoration).toBeDefined()
+    expect(deletionMarkerDecoration.range).toEqual(new FakeRange(1, 8, 1, 8))
+  })
+
   it('refreshDecorations() で行削除時のデコレーションが設定される', () => {
     ctx.models.html.setValue('<div></div>\n<span></span>')
     ctx.controller.captureBaseline()
