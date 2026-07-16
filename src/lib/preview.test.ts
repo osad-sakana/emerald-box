@@ -1,0 +1,95 @@
+// @vitest-environment happy-dom
+import { beforeEach, afterEach, describe, expect, it } from 'vitest'
+import { PreviewController } from './preview'
+import type { CodeState } from './storage'
+
+describe('PreviewController', () => {
+  let host: HTMLDivElement
+  let controller: PreviewController
+
+  beforeEach(() => {
+    host = document.createElement('div')
+    document.body.appendChild(host)
+    controller = new PreviewController(host)
+  })
+
+  afterEach(() => {
+    host.remove()
+  })
+
+  const state: CodeState = {
+    html: '<h1 id="marker">見出し</h1>',
+    css: '#marker { color: red; }',
+    javascript: 'window.__markerJs = true',
+  }
+
+  describe('コンストラクタ', () => {
+    it('host に iframe が追加される', () => {
+      const frame = host.querySelector('iframe')
+      expect(frame).not.toBeNull()
+    })
+
+    it('iframe の sandbox 属性が allow-scripts allow-modals で allow-same-origin を含まない', () => {
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.getAttribute('sandbox')).toBe('allow-scripts allow-modals')
+      expect(frame.getAttribute('sandbox')).not.toContain('allow-same-origin')
+    })
+
+    it('iframe の title 属性が プレビュー になる', () => {
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.getAttribute('title')).toBe('プレビュー')
+    })
+  })
+
+  describe('renderMarkup', () => {
+    it('frame.srcdoc に HTML/CSS が含まれる', () => {
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).toContain(state.html)
+      expect(frame.srcdoc).toContain(state.css)
+    })
+
+    it('frame.srcdoc にユーザーの JavaScript が含まれない', () => {
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).not.toContain(state.javascript)
+    })
+  })
+
+  describe('runWithJs', () => {
+    it('frame.srcdoc にユーザーの JavaScript が含まれる', () => {
+      controller.runWithJs(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).toContain(state.javascript)
+    })
+  })
+
+  describe('forceStop', () => {
+    it('元の iframe が DOM から削除される', () => {
+      const originalFrame = host.querySelector('iframe') as HTMLIFrameElement
+      controller.forceStop(state)
+      expect(originalFrame.isConnected).toBe(false)
+    })
+
+    it('新しい iframe が host に追加される', () => {
+      const originalFrame = host.querySelector('iframe') as HTMLIFrameElement
+      controller.forceStop(state)
+      const frames = host.querySelectorAll('iframe')
+      expect(frames.length).toBe(1)
+      expect(frames[0]).not.toBe(originalFrame)
+    })
+
+    it('新しい iframe にも sandbox 属性が正しく設定される', () => {
+      controller.forceStop(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.getAttribute('sandbox')).toBe('allow-scripts allow-modals')
+    })
+
+    it('呼出後は renderMarkup の結果（JS なし）で再描画される', () => {
+      controller.forceStop(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).toContain(state.html)
+      expect(frame.srcdoc).not.toContain(state.javascript)
+    })
+  })
+})
