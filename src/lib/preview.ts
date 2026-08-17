@@ -9,7 +9,7 @@ const TAILWIND_CDN = 'https://cdn.tailwindcss.com'
 //  reset の `body, h1 { margin: 0 }` に負ける点に注意）。
 const RESET_CSS = `*, *::before, *::after { box-sizing: border-box; }
 body, h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd { margin: 0; }
-ul[role='list'], ol[role='list'] { list-style: none; padding: 0; }
+ul, ol { list-style: none; padding: 0; }
 body { min-height: 100vh; line-height: 1.5; }
 img, picture { max-width: 100%; display: block; }
 input, button, textarea, select { font: inherit; }`

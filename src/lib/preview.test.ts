@@ -131,6 +131,15 @@ describe('PreviewController', () => {
       expect(frame.srcdoc).toContain('box-sizing: border-box')
       customHost.remove()
     })
+
+    it('setOptions に渡したオブジェクトを後から変更しても反映に影響しない', () => {
+      const options = { resetCss: false, tailwind: true }
+      controller.setOptions(options)
+      options.tailwind = false
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).toContain('cdn.tailwindcss.com')
+    })
   })
 
   describe('forceStop', () => {
