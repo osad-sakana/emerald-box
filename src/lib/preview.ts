@@ -4,7 +4,9 @@ import { DEFAULT_PREVIEW_OPTIONS, type CodeState, type PreviewOptions } from './
 const TAILWIND_CDN = 'https://cdn.tailwindcss.com'
 
 // 「Reset CSS」有効時に適用する最小限のブラウザデフォルトリセット。
-// ユーザーCSSはbody末尾にあり常にこれより優先されるため、head内に置いてよい。
+// ユーザーCSSはbody末尾にあるため、同じ詳細度なら常にこれより優先される
+// （ユーザー側の詳細度が低い場合、例えば `* { margin: 8px }` は
+//  reset の `body, h1 { margin: 0 }` に負ける点に注意）。
 const RESET_CSS = `*, *::before, *::after { box-sizing: border-box; }
 body, h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd { margin: 0; }
 ul[role='list'], ol[role='list'] { list-style: none; padding: 0; }
@@ -58,13 +60,13 @@ export class PreviewController {
 
   constructor(host: HTMLElement, options: PreviewOptions = DEFAULT_PREVIEW_OPTIONS) {
     this.host = host
-    this.options = options
+    this.options = { ...options }
     this.frame = this.createFrame()
   }
 
   // reset CSS / Tailwind CDN の有効・無効を更新する。反映には renderMarkup 等の再呼び出しが必要。
   setOptions(options: PreviewOptions): void {
-    this.options = options
+    this.options = { ...options }
   }
 
   // Tailwindクラスを動的に付与した新しいiframeを生成する。

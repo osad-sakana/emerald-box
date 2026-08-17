@@ -91,6 +91,26 @@ describe('PreviewController', () => {
       expect(frame.srcdoc).toContain('box-sizing: border-box')
     })
 
+    it('resetCss/tailwind を両方有効にすると両方が含まれる', () => {
+      controller.setOptions({ resetCss: true, tailwind: true })
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).toContain('cdn.tailwindcss.com')
+      expect(frame.srcdoc).toContain('box-sizing: border-box')
+    })
+
+    it('reset CSS は <head> 内（<body> より前）に置かれる', () => {
+      controller.setOptions({ resetCss: true, tailwind: true })
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      const resetIndex = frame.srcdoc.indexOf('box-sizing: border-box')
+      const headCloseIndex = frame.srcdoc.indexOf('</head>')
+      const bodyIndex = frame.srcdoc.indexOf('<body>')
+      expect(resetIndex).toBeGreaterThan(-1)
+      expect(resetIndex).toBeLessThan(headCloseIndex)
+      expect(resetIndex).toBeLessThan(bodyIndex)
+    })
+
     it('runWithJs でも設定したオプションが反映される', () => {
       controller.setOptions({ resetCss: false, tailwind: false })
       controller.runWithJs(state)

@@ -407,15 +407,13 @@ import JsIcon from '../components/icons/JsIcon.astro'
     chkResetCss.checked = previewOptions.resetCss
     chkTailwind.checked = previewOptions.tailwind
 
-    // JS実行済みの間はJSも維持したまま、そうでなければHTML/CSSのみ再描画する。
+    // HTML/CSS編集時・強制終了時と同様、常にHTML/CSSのみで再描画しJS未実行状態に戻す
+    // （オプション変更で意図せずユーザーJSが再実行され、暴走スクリプトが再発するのを防ぐ）。
     const applyPreviewOptions = () => {
       savePreviewOptions(previewOptions)
       preview.setOptions(previewOptions)
-      if (jsApplied) {
-        preview.runWithJs(getState())
-      } else {
-        preview.renderMarkup(getState())
-      }
+      preview.renderMarkup(getState())
+      setJsApplied(false)
     }
     chkResetCss.addEventListener('change', () => {
       previewOptions = { ...previewOptions, resetCss: chkResetCss.checked }

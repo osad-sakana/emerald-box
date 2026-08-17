@@ -25,13 +25,14 @@ pnpm preview      # ビルド結果のプレビュー
 
 - `src/pages/index.astro` が UI 本体 + クライアントスクリプト。`<script>` 内で Monaco を初期化し全機能を配線する。
 - **ペインの概念**: `PaneKey = 'html' | 'css' | 'javascript' | 'preview'`（`src/lib/storage.ts`）。HTML/CSS/JS/プレビューの4ペインを横並びにし、各ペインは表示トグルとガターによるリサイズが可能。
-  - 表示状態・サイズ（flex-grow 比率）・コード・レイアウト方向（横並び/縦並び）はそれぞれ別キーで `localStorage` に永続化（`emerald-box:code/panels/sizes/layout/editor-group-size:v1`）。
+  - 表示状態・サイズ（flex-grow 比率）・コード・レイアウト方向（横並び/縦並び）・講師モード・文字サイズ・プレビューオプション（reset CSS / Tailwind CSS）はそれぞれ別キーで `localStorage` に永続化（`emerald-box:code/panels/sizes/layout/editor-group-size/instructor/font-size/preview-options:v1`）。
   - エディタは `EditorLang`（preview を除く3種）にのみ存在。`preview` を扱う箇所は `isEditorLang()` でガードする。
   - **レイアウトモード**: デフォルトは横並び。「縦並び」では HTML/CSS/JS の3エディタだけを縦積みにし、プレビューは引き続き右側に横並びで残す。`#editor-group` という透過ラッパー（`display: contents`）で実現しており、横並び時はボックスとして存在しないため既存のガター/リサイズロジックが無改造で動く。縦並び時のみ `flex flex-col` に切り替わる。
 - `src/lib/preview.ts` の `PreviewController` が iframe を管理。
   - `renderMarkup()`: HTML/CSS のみ反映（ライブプレビュー）。
   - `runWithJs()`: JS を含めて実行（「JS実行」ボタン）。
   - `forceStop()`: iframe を `remove()` → 再生成して暴走スクリプトを停止。
+  - `setOptions()`: reset CSS / Tailwind CDN（`PreviewOptions`）の有効・無効を更新。反映には `renderMarkup()` 等の再呼び出しが必要（ハンバーガーメニューのチェックボックスから配線）。
 - `src/lib/storage.ts`: 読み込み/保存とデバウンス。壊れたデータは必ずデフォルトへフォールバックする。
 - `src/components/Credits.astro` + `src/lib/licenses.ts`: ライセンス表示モーダル。
 
