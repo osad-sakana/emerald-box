@@ -58,6 +58,12 @@ export const LICENSES: LicenseEntry[] = [
     copyright: 'Created by Roger Ferguson (2011)',
     url: 'https://github.com/voodootikigod/logo.js',
   },
+  {
+    name: 'Reset CSS (modern-css-reset を一部参考)',
+    license: 'MIT License',
+    copyright: 'Copyright (c) 2019 Andy Bell',
+    url: 'https://github.com/hankchizljaw/modern-css-reset',
+  },
 ]
 
 // MIT ライセンス本文（許諾条件・無保証条項）。各 MIT パッケージ共通。

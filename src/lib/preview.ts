@@ -69,7 +69,7 @@ export class PreviewController {
     this.options = { ...options }
   }
 
-  // Tailwindクラスを動的に付与した新しいiframeを生成する。
+  // プレビュー用の新しいiframeを生成する（sandbox属性付き）。
   private createFrame(): HTMLIFrameElement {
     const frame = document.createElement('iframe')
     frame.className = 'h-full w-full bg-white'
