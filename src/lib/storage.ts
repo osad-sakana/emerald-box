@@ -80,11 +80,10 @@ export interface PreviewOptions {
   tailwind: boolean
 }
 
-// tailwind: 従来から常時有効だった挙動を維持するためデフォルトON。
-// resetCss: 新規機能のため、既存の見た目を変えないようデフォルトOFF。
+// resetCss/tailwind ともにユーザーが明示的に選ぶまでは何も注入しないデフォルトOFF。
 export const DEFAULT_PREVIEW_OPTIONS: PreviewOptions = {
   resetCss: false,
-  tailwind: true,
+  tailwind: false,
 }
 
 // immutableに状態を読み込む。壊れたデータはデフォルトにフォールバック。

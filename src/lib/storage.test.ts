@@ -448,7 +448,7 @@ describe('loadPreviewOptions / savePreviewOptions', () => {
     localStorage.clear()
   })
 
-  it('localStorageが空の場合デフォルト値を返す（tailwind: true, resetCss: false）', () => {
+  it('localStorageが空の場合デフォルト値を返す（tailwind: false, resetCss: false）', () => {
     expect(loadPreviewOptions()).toEqual(DEFAULT_PREVIEW_OPTIONS)
   })
 

@@ -65,10 +65,10 @@ describe('PreviewController', () => {
   })
 
   describe('プレビューオプション（reset CSS / Tailwind）', () => {
-    it('デフォルトでは Tailwind CDN の script タグが含まれる', () => {
+    it('デフォルトでは Tailwind CDN の script タグが含まれない', () => {
       controller.renderMarkup(state)
       const frame = host.querySelector('iframe') as HTMLIFrameElement
-      expect(frame.srcdoc).toContain('cdn.tailwindcss.com')
+      expect(frame.srcdoc).not.toContain('cdn.tailwindcss.com')
     })
 
     it('デフォルトでは reset CSS は含まれない', () => {
@@ -77,11 +77,11 @@ describe('PreviewController', () => {
       expect(frame.srcdoc).not.toContain('box-sizing: border-box')
     })
 
-    it('tailwind: false にすると Tailwind CDN の script タグが含まれなくなる', () => {
-      controller.setOptions({ resetCss: false, tailwind: false })
+    it('tailwind: true にすると Tailwind CDN の script タグが含まれる', () => {
+      controller.setOptions({ resetCss: false, tailwind: true })
       controller.renderMarkup(state)
       const frame = host.querySelector('iframe') as HTMLIFrameElement
-      expect(frame.srcdoc).not.toContain('cdn.tailwindcss.com')
+      expect(frame.srcdoc).toContain('cdn.tailwindcss.com')
     })
 
     it('resetCss: true にすると reset CSS が含まれる', () => {
