@@ -229,6 +229,8 @@ import JsIcon from '../components/icons/JsIcon.astro'
     saveInstructorMode,
     loadFontSizes,
     saveFontSizes,
+    loadPreviewOptions,
+    savePreviewOptions,
     MIN_FONT_SIZE,
     MAX_FONT_SIZE,
     FONT_SIZE_STEP,
@@ -241,6 +243,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
     type EditorLang,
     type PaneKey,
     type FontSizes,
+    type PreviewOptions,
   } from '../lib/storage'
   import { PreviewController } from '../lib/preview'
   import { createInstructorController } from '../lib/instructor-mode'
@@ -291,7 +294,8 @@ import JsIcon from '../components/icons/JsIcon.astro'
     }
 
     const host = document.getElementById('preview-host')!
-    const preview = new PreviewController(host)
+    let previewOptions: PreviewOptions = loadPreviewOptions()
+    const preview = new PreviewController(host, previewOptions)
 
     // 講師モード: 文字拡大＋基準からの変更行ハイライト（講師の手元マシンでのみ使う想定）。
     const instructor = createInstructorController({ editors, models, monaco, initialFontSizes: fontSizes })
@@ -396,6 +400,31 @@ import JsIcon from '../components/icons/JsIcon.astro'
     // 初回プレビュー（HTML/CSS のみ）。
     preview.renderMarkup(getState())
     updateRunButtonHint()
+
+    // reset CSS / Tailwind CSS 有効化チェックボックス（ハンバーガーメニュー内）。
+    const chkResetCss = document.getElementById('chk-reset-css')! as HTMLInputElement
+    const chkTailwind = document.getElementById('chk-tailwind')! as HTMLInputElement
+    chkResetCss.checked = previewOptions.resetCss
+    chkTailwind.checked = previewOptions.tailwind
+
+    // JS実行済みの間はJSも維持したまま、そうでなければHTML/CSSのみ再描画する。
+    const applyPreviewOptions = () => {
+      savePreviewOptions(previewOptions)
+      preview.setOptions(previewOptions)
+      if (jsApplied) {
+        preview.runWithJs(getState())
+      } else {
+        preview.renderMarkup(getState())
+      }
+    }
+    chkResetCss.addEventListener('change', () => {
+      previewOptions = { ...previewOptions, resetCss: chkResetCss.checked }
+      applyPreviewOptions()
+    })
+    chkTailwind.addEventListener('change', () => {
+      previewOptions = { ...previewOptions, tailwind: chkTailwind.checked }
+      applyPreviewOptions()
+    })
 
     // ペインの表示/非表示・相対サイズ・並び方向。いずれも localStorage に永続化する。
     let panels: PanelState = loadPanels()

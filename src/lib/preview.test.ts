@@ -64,6 +64,55 @@ describe('PreviewController', () => {
     })
   })
 
+  describe('プレビューオプション（reset CSS / Tailwind）', () => {
+    it('デフォルトでは Tailwind CDN の script タグが含まれる', () => {
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).toContain('cdn.tailwindcss.com')
+    })
+
+    it('デフォルトでは reset CSS は含まれない', () => {
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).not.toContain('box-sizing: border-box')
+    })
+
+    it('tailwind: false にすると Tailwind CDN の script タグが含まれなくなる', () => {
+      controller.setOptions({ resetCss: false, tailwind: false })
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).not.toContain('cdn.tailwindcss.com')
+    })
+
+    it('resetCss: true にすると reset CSS が含まれる', () => {
+      controller.setOptions({ resetCss: true, tailwind: true })
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).toContain('box-sizing: border-box')
+    })
+
+    it('runWithJs でも設定したオプションが反映される', () => {
+      controller.setOptions({ resetCss: false, tailwind: false })
+      controller.runWithJs(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).not.toContain('cdn.tailwindcss.com')
+    })
+
+    it('コンストラクタで渡した初期オプションが反映される', () => {
+      const customHost = document.createElement('div')
+      document.body.appendChild(customHost)
+      const customController = new PreviewController(customHost, {
+        resetCss: true,
+        tailwind: false,
+      })
+      customController.renderMarkup(state)
+      const frame = customHost.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).not.toContain('cdn.tailwindcss.com')
+      expect(frame.srcdoc).toContain('box-sizing: border-box')
+      customHost.remove()
+    })
+  })
+
   describe('forceStop', () => {
     it('元の iframe が DOM から削除される', () => {
       const originalFrame = host.querySelector('iframe') as HTMLIFrameElement

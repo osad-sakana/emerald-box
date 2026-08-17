@@ -80,7 +80,7 @@ const iconUrl = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/favicon.svg`
       </button>
       <div
         id="menu-dropdown"
-        class="hidden absolute right-0 top-full z-20 mt-2 w-36 flex-col gap-1 rounded-md border border-slate-700 bg-slate-900 p-1.5 shadow-lg"
+        class="hidden absolute right-0 top-full z-20 mt-2 w-52 flex-col gap-1 rounded-md border border-slate-700 bg-slate-900 p-1.5 shadow-lg"
       >
         <button
           id="btn-instructor"
@@ -98,6 +98,29 @@ const iconUrl = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/favicon.svg`
         >
           ⓘ ライセンス
         </button>
+
+        <div class="my-1 h-px bg-slate-700" aria-hidden="true"></div>
+
+        <label
+          class="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-slate-400 transition hover:bg-slate-800 hover:text-emerald-400"
+        >
+          <input
+            id="chk-reset-css"
+            type="checkbox"
+            class="h-3.5 w-3.5 accent-emerald-500"
+          />
+          Reset CSSを有効化
+        </label>
+        <label
+          class="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-slate-400 transition hover:bg-slate-800 hover:text-emerald-400"
+        >
+          <input
+            id="chk-tailwind"
+            type="checkbox"
+            class="h-3.5 w-3.5 accent-emerald-500"
+          />
+          Tailwind CSSを有効化
+        </label>
       </div>
     </div>
   </div>
@@ -124,5 +147,9 @@ const iconUrl = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/favicon.svg`
     if (e.key === 'Escape') setMenuOpen(false)
   })
   // メニュー内の項目をクリックしたら閉じる（講師モード切替・ライセンス表示どちらも実行後に閉じてよい）。
-  menuDropdown.addEventListener('click', () => setMenuOpen(false))
+  // ただしチェックボックス（reset CSS / Tailwind CSS）は複数連続で切り替えたいため閉じない。
+  menuDropdown.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('label')) return
+    setMenuOpen(false)
+  })
 </script>
