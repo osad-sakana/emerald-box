@@ -61,8 +61,8 @@ export const LICENSES: LicenseEntry[] = [
   {
     name: 'Reset CSS (modern-css-reset を一部参考)',
     license: 'MIT License',
-    copyright: 'Copyright (c) 2019 Andy Bell',
-    url: 'https://github.com/hankchizljaw/modern-css-reset',
+    copyright: 'Copyright (c) 2019 Andy Bell and other contributors',
+    url: 'https://github.com/Andy-set-studio/modern-css-reset',
   },
 ]
 
