@@ -16,6 +16,8 @@ import {
   saveInstructorMode,
   loadFontSizes,
   saveFontSizes,
+  loadPreviewOptions,
+  savePreviewOptions,
   debounce,
   DEFAULT_CODE,
   DEFAULT_PANELS,
@@ -23,6 +25,7 @@ import {
   DEFAULT_LAYOUT,
   DEFAULT_EDITOR_GROUP_SIZE,
   DEFAULT_FONT_SIZES,
+  DEFAULT_PREVIEW_OPTIONS,
   MIN_FONT_SIZE,
   MAX_FONT_SIZE,
 } from './storage'
@@ -88,6 +91,7 @@ describe('clearCode', () => {
     localStorage.setItem('emerald-box:editor-group-size:v1', 'e')
     localStorage.setItem('emerald-box:instructor:v1', 'f')
     localStorage.setItem('emerald-box:font-size:v1', 'g')
+    localStorage.setItem('emerald-box:preview-options:v1', 'h')
 
     clearCode()
 
@@ -98,6 +102,7 @@ describe('clearCode', () => {
     expect(localStorage.getItem('emerald-box:editor-group-size:v1')).toBeNull()
     expect(localStorage.getItem('emerald-box:instructor:v1')).toBeNull()
     expect(localStorage.getItem('emerald-box:font-size:v1')).toBeNull()
+    expect(localStorage.getItem('emerald-box:preview-options:v1')).toBeNull()
   })
 })
 
@@ -435,5 +440,43 @@ describe('イミュータビリティ検証', () => {
     const fontSizes = loadFontSizes()
     fontSizes.normal = 999
     expect(loadFontSizes()).toEqual(DEFAULT_FONT_SIZES)
+  })
+})
+
+describe('loadPreviewOptions / savePreviewOptions', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  it('localStorageが空の場合デフォルト値を返す（tailwind: false, resetCss: false）', () => {
+    expect(loadPreviewOptions()).toEqual(DEFAULT_PREVIEW_OPTIONS)
+  })
+
+  it('保存したデータを正しく復元する', () => {
+    const options = { resetCss: true, tailwind: false }
+    savePreviewOptions(options)
+    expect(loadPreviewOptions()).toEqual(options)
+  })
+
+  it('壊れたJSONの場合デフォルトにフォールバックする', () => {
+    localStorage.setItem('emerald-box:preview-options:v1', '{invalid json')
+    expect(loadPreviewOptions()).toEqual(DEFAULT_PREVIEW_OPTIONS)
+  })
+
+  it('フィールドの型が不正な場合はそのフィールドのみデフォルトにフォールバックする', () => {
+    localStorage.setItem(
+      'emerald-box:preview-options:v1',
+      JSON.stringify({ resetCss: 'yes', tailwind: false })
+    )
+    expect(loadPreviewOptions()).toEqual({
+      resetCss: DEFAULT_PREVIEW_OPTIONS.resetCss,
+      tailwind: false,
+    })
+  })
+
+  it('返却オブジェクトを変更しても次回loadに影響しない', () => {
+    const options = loadPreviewOptions()
+    options.resetCss = true
+    expect(loadPreviewOptions()).toEqual(DEFAULT_PREVIEW_OPTIONS)
   })
 })

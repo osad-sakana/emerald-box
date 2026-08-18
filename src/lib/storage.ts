@@ -12,6 +12,7 @@ const LAYOUT_KEY = 'emerald-box:layout:v1'
 const EDITOR_GROUP_SIZE_KEY = 'emerald-box:editor-group-size:v1'
 const INSTRUCTOR_KEY = 'emerald-box:instructor:v1'
 const FONT_SIZE_KEY = 'emerald-box:font-size:v1'
+const PREVIEW_OPTIONS_KEY = 'emerald-box:preview-options:v1'
 
 // ペイン全体の並び方向。
 export type LayoutMode = 'horizontal' | 'vertical'
@@ -73,6 +74,18 @@ export const DEFAULT_FONT_SIZES: FontSizes = {
   instructor: 20,
 }
 
+// プレビューiframeに適用するオプション（reset CSS / Tailwind CDN）。
+export interface PreviewOptions {
+  resetCss: boolean
+  tailwind: boolean
+}
+
+// resetCss/tailwind ともにユーザーが明示的に選ぶまでは何も注入しないデフォルトOFF。
+export const DEFAULT_PREVIEW_OPTIONS: PreviewOptions = {
+  resetCss: false,
+  tailwind: false,
+}
+
 // immutableに状態を読み込む。壊れたデータはデフォルトにフォールバック。
 export function loadCode(): CodeState {
   if (typeof localStorage === 'undefined') return { ...DEFAULT_CODE }
@@ -113,6 +126,7 @@ export function clearCode(): void {
     localStorage.removeItem(EDITOR_GROUP_SIZE_KEY)
     localStorage.removeItem(INSTRUCTOR_KEY)
     localStorage.removeItem(FONT_SIZE_KEY)
+    localStorage.removeItem(PREVIEW_OPTIONS_KEY)
   } catch (error) {
     console.error('リセットに失敗しました:', error)
   }
@@ -271,6 +285,38 @@ export function saveFontSizes(sizes: FontSizes): void {
     localStorage.setItem(FONT_SIZE_KEY, JSON.stringify(sizes))
   } catch (error) {
     console.error('フォントサイズの保存に失敗しました:', error)
+  }
+}
+
+// プレビューオプションの読み込み。壊れたデータはデフォルトにフォールバック。
+export function loadPreviewOptions(): PreviewOptions {
+  if (typeof localStorage === 'undefined') return { ...DEFAULT_PREVIEW_OPTIONS }
+  try {
+    const raw = localStorage.getItem(PREVIEW_OPTIONS_KEY)
+    if (!raw) return { ...DEFAULT_PREVIEW_OPTIONS }
+    const parsed = JSON.parse(raw) as Partial<PreviewOptions>
+    return {
+      resetCss:
+        typeof parsed.resetCss === 'boolean'
+          ? parsed.resetCss
+          : DEFAULT_PREVIEW_OPTIONS.resetCss,
+      tailwind:
+        typeof parsed.tailwind === 'boolean'
+          ? parsed.tailwind
+          : DEFAULT_PREVIEW_OPTIONS.tailwind,
+    }
+  } catch (error) {
+    console.error('プレビューオプションの読み込みに失敗しました:', error)
+    return { ...DEFAULT_PREVIEW_OPTIONS }
+  }
+}
+
+export function savePreviewOptions(options: PreviewOptions): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(PREVIEW_OPTIONS_KEY, JSON.stringify(options))
+  } catch (error) {
+    console.error('プレビューオプションの保存に失敗しました:', error)
   }
 }
 

@@ -64,6 +64,84 @@ describe('PreviewController', () => {
     })
   })
 
+  describe('プレビューオプション（reset CSS / Tailwind）', () => {
+    it('デフォルトでは Tailwind CDN の script タグが含まれない', () => {
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).not.toContain('cdn.tailwindcss.com')
+    })
+
+    it('デフォルトでは reset CSS は含まれない', () => {
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).not.toContain('box-sizing: border-box')
+    })
+
+    it('tailwind: true にすると Tailwind CDN の script タグが含まれる', () => {
+      controller.setOptions({ resetCss: false, tailwind: true })
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).toContain('cdn.tailwindcss.com')
+    })
+
+    it('resetCss: true にすると reset CSS が含まれる', () => {
+      controller.setOptions({ resetCss: true, tailwind: true })
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).toContain('box-sizing: border-box')
+    })
+
+    it('resetCss/tailwind を両方有効にすると両方が含まれる', () => {
+      controller.setOptions({ resetCss: true, tailwind: true })
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).toContain('cdn.tailwindcss.com')
+      expect(frame.srcdoc).toContain('box-sizing: border-box')
+    })
+
+    it('reset CSS は <head> 内（<body> より前）に置かれる', () => {
+      controller.setOptions({ resetCss: true, tailwind: true })
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      const resetIndex = frame.srcdoc.indexOf('box-sizing: border-box')
+      const headCloseIndex = frame.srcdoc.indexOf('</head>')
+      const bodyIndex = frame.srcdoc.indexOf('<body>')
+      expect(resetIndex).toBeGreaterThan(-1)
+      expect(resetIndex).toBeLessThan(headCloseIndex)
+      expect(resetIndex).toBeLessThan(bodyIndex)
+    })
+
+    it('runWithJs でも設定したオプションが反映される', () => {
+      controller.setOptions({ resetCss: false, tailwind: false })
+      controller.runWithJs(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).not.toContain('cdn.tailwindcss.com')
+    })
+
+    it('コンストラクタで渡した初期オプションが反映される', () => {
+      const customHost = document.createElement('div')
+      document.body.appendChild(customHost)
+      const customController = new PreviewController(customHost, {
+        resetCss: true,
+        tailwind: false,
+      })
+      customController.renderMarkup(state)
+      const frame = customHost.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).not.toContain('cdn.tailwindcss.com')
+      expect(frame.srcdoc).toContain('box-sizing: border-box')
+      customHost.remove()
+    })
+
+    it('setOptions に渡したオブジェクトを後から変更しても反映に影響しない', () => {
+      const options = { resetCss: false, tailwind: true }
+      controller.setOptions(options)
+      options.tailwind = false
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).toContain('cdn.tailwindcss.com')
+    })
+  })
+
   describe('forceStop', () => {
     it('元の iframe が DOM から削除される', () => {
       const originalFrame = host.querySelector('iframe') as HTMLIFrameElement
