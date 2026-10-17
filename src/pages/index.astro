@@ -247,6 +247,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
   } from '../lib/storage'
   import { PreviewController } from '../lib/preview'
   import { createInstructorController } from '../lib/instructor-mode'
+  import { attachHtmlAutoClose } from '../lib/html-auto-close'
 
   // Monaco を CDN から読み込む。
   loader.config({
@@ -292,6 +293,9 @@ import JsIcon from '../components/icons/JsIcon.astro'
       css: makeEditor('css'),
       javascript: makeEditor('javascript'),
     }
+
+    // HTML エディタのみ、開始タグの `>` 入力で閉じタグを自動挿入する。
+    attachHtmlAutoClose(editors.html, monaco)
 
     const host = document.getElementById('preview-host')!
     let previewOptions: PreviewOptions = loadPreviewOptions()
