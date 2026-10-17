@@ -37,6 +37,8 @@ interface ScannedTag {
 const scanStartTag = (text: string, start: number): ScannedTag | null => {
   const match = TAG_NAME_PATTERN.exec(text.slice(start + 1))
   if (!match) return null
+  // 名前が ASCII 英数字・`_:.-` 以外で途切れる場合（`<a$>` / `<div日本>`）は、誤った閉じタグを避けて対象外にする。
+  if (!/[\s/>]/.test(text[start + 1 + match[0].length] ?? '')) return null
   let quote: string | null = null
   for (let i = start + 1 + match[0].length; i < text.length; i++) {
     const ch = text[i]

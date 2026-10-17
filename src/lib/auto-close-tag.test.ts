@@ -56,6 +56,9 @@ describe('findTagToClose: 閉じないケース', () => {
     ['title の中', '<title><b>|'],
     ['名前の続く閉じタグでは script は閉じない', '<script>x</scriptx><div>|'],
     ['閉じていないクォート内の >', '<div class="a>|'],
+    ['タグ名が非 ASCII で途切れる', '<my-élément>|'],
+    ['タグ名が記号で途切れる', '<a$>|'],
+    ['タグ名が日本語で途切れる', '<div日本>|'],
   ])('%s', (_name, source) => {
     expect(run(source)).toBeNull()
   })
