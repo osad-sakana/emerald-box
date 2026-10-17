@@ -24,6 +24,11 @@ describe('findTagToClose: 閉じタグを返すケース', () => {
     ['閉じ済みの script の後ろ', '<script>a<b</script><div>|', 'div'],
     ['閉じ済みのコメントの後ろ', '<!-- a --><div>|', 'div'],
     ['直後が別名の閉じタグ', '<div>|</span>', 'div'],
+    ['空コメント <!--> の後ろ', '<!--><div>|', 'div'],
+    ['空コメント <!---> の後ろ', '<!---><div>|', 'div'],
+    ['大文字で閉じた script の後ろ', '<script>a</SCRIPT><div>|', 'div'],
+    ['自己閉じ script は内側扱いにしない', '<script/><div>|', 'div'],
+    ['直後が名前の続く別名の閉じタグ', '<a.b>|</a.bc>', 'a.b'],
   ])('%s', (_name, source, expected) => {
     expect(run(source)).toBe(expected)
   })
@@ -49,6 +54,8 @@ describe('findTagToClose: 閉じないケース', () => {
     ['style の中', '<style>a<b>|'],
     ['textarea の中', '<textarea><div>|'],
     ['title の中', '<title><b>|'],
+    ['名前の続く閉じタグでは script は閉じない', '<script>x</scriptx><div>|'],
+    ['閉じていないクォート内の >', '<div class="a>|'],
   ])('%s', (_name, source) => {
     expect(run(source)).toBeNull()
   })

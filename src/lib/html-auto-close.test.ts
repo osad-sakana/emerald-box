@@ -26,6 +26,8 @@ class FakeSelection extends FakeRange {}
 
 const setup = (value: string, selectionCount = 1) => {
   let listener: Listener | null = null
+  let onCompositionStart: () => void = () => {}
+  let onCompositionEnd: () => void = () => {}
   const dispose = vi.fn()
   const calls: string[] = []
   const executeEdits = vi.fn((_source: string, _edits: unknown[], _computer?: () => unknown[]) => {
@@ -35,6 +37,14 @@ const setup = (value: string, selectionCount = 1) => {
   const editor = {
     onDidChangeModelContent: (l: Listener) => {
       listener = l
+      return { dispose }
+    },
+    onDidCompositionStart: (l: () => void) => {
+      onCompositionStart = l
+      return { dispose }
+    },
+    onDidCompositionEnd: (l: () => void) => {
+      onCompositionEnd = l
       return { dispose }
     },
     getModel: () => ({
@@ -58,7 +68,11 @@ const setup = (value: string, selectionCount = 1) => {
       isFlush: false,
       ...overrides,
     })
-  return { editor, handle, fire, dispose, executeEdits, calls }
+  const composition = {
+    start: () => onCompositionStart(),
+    end: () => onCompositionEnd(),
+  }
+  return { editor, handle, fire, dispose, executeEdits, calls, composition }
 }
 
 describe('attachHtmlAutoClose', () => {
@@ -135,9 +149,19 @@ describe('attachHtmlAutoClose', () => {
     expect(executeEdits).not.toHaveBeenCalled()
   })
 
-  it('dispose で購読を解除する', () => {
+  it('IME 変換中は挿入せず、変換終了後は再び挿入する', () => {
+    const { fire, executeEdits, composition } = setup('<div>')
+    composition.start()
+    fire()
+    expect(executeEdits).not.toHaveBeenCalled()
+    composition.end()
+    fire()
+    expect(executeEdits).toHaveBeenCalledTimes(1)
+  })
+
+  it('dispose で購読（内容変更・変換開始・変換終了）をすべて解除する', () => {
     const { handle, dispose } = setup('<div>')
     handle.dispose()
-    expect(dispose).toHaveBeenCalledTimes(1)
+    expect(dispose).toHaveBeenCalledTimes(3)
   })
 })

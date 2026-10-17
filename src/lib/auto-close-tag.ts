@@ -15,7 +15,8 @@ export const VOID_ELEMENTS: ReadonlySet<string> = new Set([
   'wbr',
 ])
 
-// 中身をタグとして解釈しない要素（誤作動を避けるため、閉じるまで内側では何もしない）。
+// 中身をタグとして解釈しない要素（script/style は RAWTEXT、textarea/title は RCDATA）。
+// 誤作動を避けるため、閉じるまで内側では何もしない。
 export const RAW_TEXT_ELEMENTS: ReadonlySet<string> = new Set([
   'script',
   'style',
@@ -53,16 +54,26 @@ const scanStartTag = (text: string, start: number): ScannedTag | null => {
 // 閉じタグ・DOCTYPE・処理命令など、`<` の次が `/` `!` `?` の構文を読み飛ばした次の位置を返す。
 const skipMarkup = (text: string, start: number): number => {
   if (text.startsWith('<!--', start)) {
-    const close = text.indexOf('-->', start + 4)
+    // `<!-->` / `<!--->` は空コメントとして閉じるため、`<!--` の途中（start + 2）から `-->` を探す。
+    const close = text.indexOf('-->', start + 2)
     return close === -1 ? -1 : close + 3
   }
   const close = text.indexOf('>', start + 1)
   return close === -1 ? -1 : close + 1
 }
 
-// RAWTEXT 要素の中身を読み飛ばし、対応する閉じタグの位置を返す。閉じていなければ -1。
-const findRawTextEnd = (text: string, from: number, name: string): number =>
-  text.toLowerCase().indexOf(`</${name.toLowerCase()}`, from)
+const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+// `</name` の直後が名前の続きでないこと（`</scriptx` を除外する）まで含めて閉じタグ開始を表す。
+const closingTagPattern = (name: string, flags: string): RegExp =>
+  new RegExp(`</${escapeRegExp(name)}(?![\\w:.-])`, flags)
+
+// 中身をテキストとして読み飛ばす要素の対応する閉じタグの位置を返す。閉じていなければ -1。
+const findRawTextEnd = (text: string, from: number, name: string): number => {
+  const pattern = closingTagPattern(name, 'gi')
+  pattern.lastIndex = from
+  return pattern.exec(text)?.index ?? -1
+}
 
 // 直前に確定した `>` が開始タグの終端なら、その要素情報を返す。それ以外（タグ外・コメント内など）は null。
 const findTagEndingAtLast = (before: string): ScannedTag | null => {
@@ -83,7 +94,6 @@ const findTagEndingAtLast = (before: string): ScannedTag | null => {
       continue
     }
     if (tag.end === last) return tag
-    if (tag.end > last) return null
     if (RAW_TEXT_ELEMENTS.has(tag.name.toLowerCase()) && !tag.selfClosing) {
       i = findRawTextEnd(before, tag.end + 1, tag.name)
       if (i === -1) return null
@@ -94,10 +104,8 @@ const findTagEndingAtLast = (before: string): ScannedTag | null => {
   return null
 }
 
-const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
 const startsWithClosingTag = (after: string, name: string): boolean =>
-  new RegExp(`^</${escapeRegExp(name)}(?![\\w:.-])`, 'i').test(after)
+  closingTagPattern(name, 'iy').test(after)
 
 /**
  * `before`（文書先頭からカーソルまで）が `>` で終わる時、その開始タグに対応する閉じタグ名を返す。
