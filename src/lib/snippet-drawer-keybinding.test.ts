@@ -52,6 +52,12 @@ describe('attachDrawerEscape', () => {
     }
   })
 
+  it('initialOpen を渡すとコンテキストキーの初期値になる', () => {
+    const a = makeEditor()
+    attachDrawerEscape([a.editor], 9, document, true)
+    expect(a.editor.createContextKey).toHaveBeenCalledWith('snippetDrawerOpen', true)
+  })
+
   it('コマンド実行でクローズイベントを発火する', () => {
     const a = makeEditor()
     attachDrawerEscape([a.editor], 9, document)
