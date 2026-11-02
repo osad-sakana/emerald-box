@@ -262,6 +262,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
   import { attachHtmlAutoClose } from '../lib/html-auto-close'
   import { createSnippetActions } from '../lib/snippet-actions'
   import { copyText } from '../lib/clipboard'
+  import { attachDrawerEscape } from '../lib/snippet-drawer-keybinding'
 
   // Monaco を CDN から読み込む。
   loader.config({
@@ -615,13 +616,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
         if (!focusedLangs.includes(lang)) focusedLangs = [...focusedLangs, lang]
       })
     }
-    for (const lang of LANGS) {
-      editors[lang].addCommand(
-        monaco.KeyCode.Escape,
-        () => document.dispatchEvent(new CustomEvent('snippet-drawer:close')),
-        '!suggestWidgetVisible && !findWidgetVisible && !parameterHintsVisible && !renameInputVisible',
-      )
-    }
+    attachDrawerEscape(LANGS.map((lang) => editors[lang]), monaco.KeyCode.Escape, document)
     const snippetActions = createSnippetActions({
       editors,
       monaco,

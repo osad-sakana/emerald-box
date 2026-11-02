@@ -28,8 +28,8 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     lang: 'html',
     category: '見出し',
     label: '大見出し h1',
-    description: 'ページのいちばん大きなタイトル。',
-    code: '<h1>はじめまして！〇〇です</h1>',
+    description: 'ページのいちばん大きなタイトル。タグの間に自分で書こう。',
+    code: '<h1></h1>',
     block: true,
   },
   {
@@ -37,8 +37,8 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     lang: 'html',
     category: '見出し',
     label: '中見出し h2',
-    description: 'ページの中の見出し。',
-    code: '<h2>好きなこと</h2>',
+    description: 'ページの中の見出し。タグの間に自分で書こう。',
+    code: '<h2></h2>',
     block: true,
   },
   {
@@ -46,8 +46,8 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     lang: 'html',
     category: '段落',
     label: '文章 p',
-    description: '自己紹介の文章を書く場所。',
-    code: '<p>ここに自己紹介の文章を書きます。</p>',
+    description: '自己紹介の文章を書く場所。タグの間に自分で書こう。',
+    code: '<p></p>',
     block: true,
   },
   {
@@ -56,7 +56,7 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     category: '段落',
     label: 'メッセージ欄 p（JS用）',
     description: 'JSのパーツで文字を書き換える場所。',
-    code: '<p id="message">ボタンを押してみてね</p>',
+    code: '<p id="message"></p>',
     block: true,
   },
   {
@@ -64,8 +64,8 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     lang: 'html',
     category: '画像',
     label: '画像 img',
-    description: 'src の中を画像のURLに書き換えよう。表示できないときは alt の文字が出るよ。',
-    code: '<img src="ここに画像のURL" alt="わたしの写真" width="200">',
+    description: 'src に画像のURL、alt に画像の説明を自分で書こう。',
+    code: '<img src="" alt="" width="200">',
     block: true,
   },
   {
@@ -74,7 +74,7 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     category: 'リスト',
     label: '箇条書き ul',
     description: '好きなものを並べるときに使う。',
-    code: '<ul>\n  <li>好きなもの1</li>\n  <li>好きなもの2</li>\n  <li>好きなもの3</li>\n</ul>',
+    code: '<ul>\n  <li></li>\n  <li></li>\n  <li></li>\n</ul>',
     block: true,
   },
   {
@@ -83,7 +83,7 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     category: 'リスト',
     label: '番号つき ol（ランキング）',
     description: '順番をつけて並べるときに使う。',
-    code: '<ol>\n  <li>1位の好きな食べ物</li>\n  <li>2位の好きな食べ物</li>\n  <li>3位の好きな食べ物</li>\n</ol>',
+    code: '<ol>\n  <li></li>\n  <li></li>\n  <li></li>\n</ol>',
     block: true,
   },
   {
@@ -92,7 +92,7 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     category: 'リンク',
     label: 'ページ内リンク',
     description: 'セクションの id と同じ名前にすると、そこへジャンプするよ。',
-    code: '<a href="#hobby">趣味の紹介へ</a>',
+    code: '<a href="#hobby"></a>',
     block: false,
   },
   {
@@ -101,7 +101,7 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     category: 'リンク',
     label: '外部リンク',
     description: 'ほかのページへのリンク。プレビューの中では開けないことがあるよ。',
-    code: '<a href="https://www.example.com">リンクの文字</a>',
+    code: '<a href=""></a>',
     block: false,
   },
   {
@@ -110,7 +110,7 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     category: 'ボタン',
     label: 'ボタン button',
     description: 'JSのパーツと組み合わせて使うボタン。',
-    code: '<button id="color-button">色を変える</button>',
+    code: '<button id="color-button"></button>',
     block: true,
   },
   {
@@ -119,7 +119,7 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     category: 'セクション',
     label: 'まとまり section',
     description: '見出しと文章をひとまとまりにする。',
-    code: '<section id="hobby">\n  <h2>趣味</h2>\n  <p>わたしの趣味は〇〇です。</p>\n</section>',
+    code: '<section id="hobby">\n  <h2></h2>\n  <p></p>\n</section>',
     block: true,
   },
   {
@@ -216,7 +216,7 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     code:
       "const messageButton = document.querySelector('#color-button')\n" +
       "messageButton.addEventListener('click', () => {\n" +
-      "  document.querySelector('#message').textContent = 'ようこそ！'\n" +
+      "  document.querySelector('#message').textContent = ''\n" +
       '})',
     block: true,
   },
@@ -225,8 +225,8 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     lang: 'javascript',
     category: 'メッセージ',
     label: 'メッセージを出す',
-    description: '「▶ JS実行」を押すとメッセージが出るよ。',
-    code: "alert('ようこそ、わたしのページへ！')",
+    description: '「▶ JS実行」を押すと、かっこの中に書いたメッセージが出るよ。',
+    code: "alert('')",
     block: true,
   },
 ])

@@ -39,6 +39,14 @@ describe('SNIPPETS', () => {
     }
   })
 
+  it('HTML/JS パーツは中身（日本語の文章）を含まず、生徒が自分で書く', () => {
+    for (const lang of ['html', 'javascript'] as const) {
+      for (const s of snippetsByLang(lang)) {
+        expect(s.code).not.toMatch(/[぀-ヿ一-鿿]/)
+      }
+    }
+  })
+
   it('HTML パーツに html/body/script タグを含まない', () => {
     for (const s of snippetsByLang('html')) {
       expect(s.code).not.toMatch(/<(html|body|script)/i)
