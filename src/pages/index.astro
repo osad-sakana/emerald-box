@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro'
 import Header from '../components/Header.astro'
 import Credits from '../components/Credits.astro'
+import SnippetDrawer from '../components/SnippetDrawer.astro'
 import Html5Icon from '../components/icons/Html5Icon.astro'
 import Css3Icon from '../components/icons/Css3Icon.astro'
 import JsIcon from '../components/icons/JsIcon.astro'
@@ -106,10 +107,21 @@ import JsIcon from '../components/icons/JsIcon.astro'
             基準を記録
           </button>
         </span>
+
+        <button
+          id="btn-snippets"
+          type="button"
+          aria-expanded="false"
+          aria-controls="snippet-drawer"
+          class="ml-auto rounded-md px-3 py-1 text-sm font-medium text-slate-400 transition hover:text-slate-200"
+        >
+          パーツ集
+        </button>
       </div>
 
       <!-- 4ペイン本体（HTML/CSS/JS/プレビュー）。ガターをドラッグして幅（縦並び時は高さ/幅）を変更できる。 -->
-      <div id="panes" class="flex min-h-0 flex-1">
+      <div id="panes" class="relative flex min-h-0 flex-1">
+        <SnippetDrawer />
         <!--
           editor-group: 横並びモードでは `contents`（display:contents）を付けたままにし、
           ボックスとして存在しない透過ラッパーにする。これにより中の3ペイン+2ガターは
@@ -248,6 +260,8 @@ import JsIcon from '../components/icons/JsIcon.astro'
   import { PreviewController } from '../lib/preview'
   import { createInstructorController } from '../lib/instructor-mode'
   import { attachHtmlAutoClose } from '../lib/html-auto-close'
+  import { createSnippetActions } from '../lib/snippet-actions'
+  import { copyText } from '../lib/clipboard'
 
   // Monaco を CDN から読み込む。
   loader.config({
@@ -592,6 +606,50 @@ import JsIcon from '../components/icons/JsIcon.astro'
 
     applySizes()
     applyLayoutMode()
+
+    // パーツ集: 挿入・コピー。ペインが非表示なら開いてから挿入する。
+    // まだフォーカスしていないエディタのカーソルは (1,1) のままなので、その場合は末尾へ追記する。
+    let focusedLangs: readonly EditorLang[] = []
+    for (const lang of LANGS) {
+      editors[lang].onDidFocusEditorText(() => {
+        if (!focusedLangs.includes(lang)) focusedLangs = [...focusedLangs, lang]
+      })
+    }
+    const snippetActions = createSnippetActions({
+      editors,
+      monaco,
+      isPaneVisible: (lang) => panels[lang],
+      showPane: (lang) => {
+        panels = { ...panels, [lang]: true }
+        savePanels(panels)
+        syncPanels()
+      },
+      hasBeenFocused: (lang) => focusedLangs.includes(lang),
+      copy: (text) =>
+        copyText(text, {
+          clipboard: navigator.clipboard,
+          isSecureContext: window.isSecureContext,
+          doc: document,
+        }),
+    })
+    const snippetDrawer = document.getElementById('snippet-drawer')!
+    const snippetStatus = document.getElementById('snippet-status')!
+    snippetDrawer.addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-snippet-action]')
+      const id = btn?.dataset.snippetId
+      if (!btn || !id) return
+      if (btn.dataset.snippetAction === 'insert') {
+        snippetStatus.textContent = snippetActions.insert(id).message
+        return
+      }
+      const outcome = await snippetActions.copy(id)
+      snippetStatus.textContent = outcome.message
+      if (outcome.result === 'failed') {
+        // 手動コピーできるようコード部分を選択状態にする。
+        const code = btn.closest('li')?.querySelector('pre')
+        if (code) window.getSelection()?.selectAllChildren(code)
+      }
+    })
 
     // ガターのドラッグで隣接2要素の相対サイズを変更する。
     // gutter-css/gutter-javascript は editor-group 内部の仕切り（縦並び時は上下、横並び時は左右）。
