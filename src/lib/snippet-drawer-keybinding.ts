@@ -34,8 +34,10 @@ export const attachDrawerEscape = (
   editors: readonly DrawerEditorLike[],
   escapeKeyCode: number,
   target: DrawerEventTarget,
+  initialOpen = false,
 ): void => {
-  const openKeys = editors.map((editor) => editor.createContextKey(DRAWER_OPEN_KEY, false))
+  // Monaco 読み込み前にドロワーが開かれていても状態を取りこぼさないよう初期値を受け取る。
+  const openKeys = editors.map((editor) => editor.createContextKey(DRAWER_OPEN_KEY, initialOpen))
   for (const editor of editors) {
     editor.addCommand(
       escapeKeyCode,

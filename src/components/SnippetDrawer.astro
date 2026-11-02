@@ -1,5 +1,5 @@
 ---
-// パーツ集ドロワー。#panes（relative）の中に重ねて表示し、レイアウトには影響しない。
+// パーツ集ドロワー。#panes の左端に並ぶ flex 子要素（エディタを覆わない。Monaco は automaticLayout で追従）。
 // 挿入・コピーの実処理は index.astro 側（data-snippet-action の委譲）で行い、ここは開閉とタブ切替のみ。
 import Html5Icon from './icons/Html5Icon.astro'
 import Css3Icon from './icons/Css3Icon.astro'
@@ -25,7 +25,7 @@ const groups = LANGS.map((lang) => {
 <aside
   id="snippet-drawer"
   aria-label="パーツ集"
-  class="hidden absolute bottom-0 left-0 top-0 z-30 w-80 max-w-[60%] flex-col border-r border-emerald-800 bg-slate-900 shadow-2xl"
+  class="hidden w-80 max-w-[40%] shrink-0 flex-col border-r border-emerald-800 bg-slate-900 shadow-2xl"
 >
   <div class="flex items-start justify-between gap-2 border-b border-slate-800 px-3 py-2">
     <div>

@@ -122,7 +122,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
       </div>
 
       <!-- 4ペイン本体（HTML/CSS/JS/プレビュー）。ガターをドラッグして幅（縦並び時は高さ/幅）を変更できる。 -->
-      <div id="panes" class="relative flex min-h-0 flex-1">
+      <div id="panes" class="flex min-h-0 flex-1">
         <SnippetDrawer />
         <!--
           editor-group: 横並びモードでは `contents`（display:contents）を付けたままにし、
@@ -618,7 +618,13 @@ import JsIcon from '../components/icons/JsIcon.astro'
         if (!focusedLangs.includes(lang)) focusedLangs = [...focusedLangs, lang]
       })
     }
-    attachDrawerEscape(LANGS.map((lang) => editors[lang]), monaco.KeyCode.Escape, document)
+    const snippetDrawer = document.getElementById('snippet-drawer')!
+    attachDrawerEscape(
+      LANGS.map((lang) => editors[lang]),
+      monaco.KeyCode.Escape,
+      document,
+      !snippetDrawer.classList.contains('hidden'),
+    )
     const snippetActions = createSnippetActions({
       editors,
       monaco,
@@ -636,7 +642,6 @@ import JsIcon from '../components/icons/JsIcon.astro'
           doc: document,
         }),
     })
-    const snippetDrawer = document.getElementById('snippet-drawer')!
     const snippetStatus = document.getElementById('snippet-status')!
     snippetDrawer.addEventListener('click', async (e) => {
       const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-snippet-action]')

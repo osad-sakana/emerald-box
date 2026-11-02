@@ -91,7 +91,7 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     lang: 'html',
     category: 'リンク',
     label: 'ページ内リンク',
-    description: 'セクションの id と同じ名前にすると、そこへジャンプするよ。',
+    description: 'セクションの id と同じ名前にすると、そこへジャンプするよ。タグの間にリンクの文字を書こう。',
     code: '<a href="#hobby"></a>',
     block: false,
   },
@@ -100,7 +100,7 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     lang: 'html',
     category: 'リンク',
     label: '外部リンク',
-    description: 'ほかのページへのリンク。プレビューの中では開けないことがあるよ。',
+    description: 'ほかのページへのリンク。href にURL、タグの間にリンクの文字を書こう。プレビューの中では開けないことがあるよ。',
     code: '<a href=""></a>',
     block: false,
   },
@@ -109,7 +109,7 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     lang: 'html',
     category: 'ボタン',
     label: 'ボタン button',
-    description: 'JSのパーツと組み合わせて使うボタン。',
+    description: 'JSのパーツと組み合わせて使うボタン。タグの間にボタンの文字を書こう。',
     code: '<button id="color-button"></button>',
     block: true,
   },
@@ -212,7 +212,7 @@ export const SNIPPETS: readonly Snippet[] = Object.freeze([
     lang: 'javascript',
     category: 'ボタン',
     label: '押すと文字が変わる',
-    description: `HTMLの「ボタン button」「メッセージ欄 p」パーツと一緒に使う。${JS_NOTE}`,
+    description: `HTMLの「ボタン button」「メッセージ欄 p」パーツと一緒に使う。'' の間に出したい文字を書こう。${JS_NOTE}`,
     code:
       "const messageButton = document.querySelector('#color-button')\n" +
       "messageButton.addEventListener('click', () => {\n" +
