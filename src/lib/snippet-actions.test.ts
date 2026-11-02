@@ -55,9 +55,42 @@ describe('createSnippetActions', () => {
     expect(r.message).toBe('CSSペインを開いて挿入しました')
   })
 
-  it('未フォーカスのエディタは末尾追記（空エディタでも挿入できる）', () => {
-    const s = setup({ focused: false })
-    expect(s.actions.insert('html-heading-h1').ok).toBe(true)
+  it.each([
+    [false, [2, 9, 2, 9]],
+    [true, [1, 1, 1, 1]],
+  ])('hasBeenFocused=%s の挿入位置', (focused, expected) => {
+    const ranges: number[][] = []
+    class Rec {
+      constructor(...a: number[]) {
+        ranges.push(a)
+      }
+    }
+    const lines = ['<h1>a</h1>', '<p>b</p>']
+    const editor: SnippetEditorLike = {
+      getModel: () => ({
+        getLineContent: (n) => lines[n - 1],
+        getLineCount: () => lines.length,
+        getLineMaxColumn: (n) => lines[n - 1].length + 1,
+      }),
+      getSelection: () => ({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 }),
+      pushUndoStop: vi.fn(),
+      executeEdits: (_s, edits, computer) => {
+        void edits
+        computer?.()
+      },
+      revealPositionInCenterIfOutsideViewport: vi.fn(),
+      focus: vi.fn(),
+    }
+    const actions = createSnippetActions({
+      editors: { html: editor, css: editor, javascript: editor },
+      monaco: { Range: Rec, Selection: R },
+      isPaneVisible: () => true,
+      showPane: vi.fn(),
+      hasBeenFocused: () => focused,
+      copy: vi.fn(),
+    })
+    actions.insert('html-heading-h1')
+    expect(ranges[0]).toEqual(expected)
   })
 
   it('存在しない id は何もしない', () => {

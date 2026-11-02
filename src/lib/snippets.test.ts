@@ -24,7 +24,7 @@ describe('SNIPPETS', () => {
   })
 
   it('コードが2文字以上（閉じタグ自動生成の発火条件 ">" 単体に当たらない）', () => {
-    for (const s of SNIPPETS) expect(s.code).not.toBe('>')
+    for (const s of SNIPPETS) expect(s.code.length).toBeGreaterThanOrEqual(2)
   })
 
   it('インデントは半角スペース2の倍数でタブなし、行末空白・末尾改行なし', () => {

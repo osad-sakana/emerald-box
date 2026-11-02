@@ -615,6 +615,13 @@ import JsIcon from '../components/icons/JsIcon.astro'
         if (!focusedLangs.includes(lang)) focusedLangs = [...focusedLangs, lang]
       })
     }
+    for (const lang of LANGS) {
+      editors[lang].addCommand(
+        monaco.KeyCode.Escape,
+        () => document.dispatchEvent(new CustomEvent('snippet-drawer:close')),
+        '!suggestWidgetVisible && !findWidgetVisible && !parameterHintsVisible && !renameInputVisible',
+      )
+    }
     const snippetActions = createSnippetActions({
       editors,
       monaco,

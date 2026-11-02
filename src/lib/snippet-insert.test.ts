@@ -138,6 +138,24 @@ describe('insertSnippet', () => {
     expect(f.edits[0].text).toBe('<ul>\n    <li>a</li>\n  </ul>')
   })
 
+  it('複数行にまたがる選択の置換は前後を別々の行から取る', () => {
+    const f = makeEditor(['ab', 'cd'], {
+      startLineNumber: 1,
+      startColumn: 2,
+      endLineNumber: 2,
+      endColumn: 2,
+    })
+    insertSnippet(f.editor, monaco, snip('X'), { preferEnd: false })
+    expect(f.edits[0].range).toEqual(new FakeRange(1, 2, 2, 2))
+    expect(f.edits[0].text).toBe('\nX\n')
+  })
+
+  it('行の途中へのブロック挿入は前後に改行と indent を補う', () => {
+    const f = makeEditor(['  ab'], caret(1, 4))
+    insertSnippet(f.editor, monaco, snip('X'), { preferEnd: false })
+    expect(f.edits[0].text).toBe('\n  X\n  ')
+  })
+
   it('model が null なら false で編集しない', () => {
     const f = makeEditor([''], caret(1, 1))
     const editor = { ...f.editor, getModel: () => null }
