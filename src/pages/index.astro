@@ -15,6 +15,18 @@ import JsIcon from '../components/icons/JsIcon.astro'
     <main class="flex min-h-0 flex-1 flex-col bg-slate-950">
       <!-- 各ペインの表示トグル -->
       <div class="flex items-center gap-1 border-b border-slate-800 bg-slate-900 px-2 py-1.5">
+        <button
+          id="btn-snippets"
+          type="button"
+          aria-expanded="false"
+          aria-controls="snippet-drawer"
+          class="rounded-md px-3 py-1 text-sm font-medium text-slate-400 transition hover:text-slate-200"
+        >
+          パーツ集
+        </button>
+
+        <span class="mx-2 h-4 w-px bg-slate-700" aria-hidden="true"></span>
+
         <span class="mr-1 text-[11px] font-medium text-slate-500">表示:</span>
         <button
           type="button"
@@ -107,16 +119,6 @@ import JsIcon from '../components/icons/JsIcon.astro'
             基準を記録
           </button>
         </span>
-
-        <button
-          id="btn-snippets"
-          type="button"
-          aria-expanded="false"
-          aria-controls="snippet-drawer"
-          class="ml-auto rounded-md px-3 py-1 text-sm font-medium text-slate-400 transition hover:text-slate-200"
-        >
-          パーツ集
-        </button>
       </div>
 
       <!-- 4ペイン本体（HTML/CSS/JS/プレビュー）。ガターをドラッグして幅（縦並び時は高さ/幅）を変更できる。 -->
