@@ -76,6 +76,18 @@ export const computeEndPosition = (start: Position, text: string): Position => {
 }
 
 /**
+ * 挿入後にカーソルを置く text 内のオフセット。
+ * 最初の空要素（`></`）の開始タグ直後 → 最初の空の属性値（`=""`）の中 → 末尾、の優先順。
+ */
+export const computeCaretOffset = (text: string): number => {
+  const empty = text.indexOf('></')
+  if (empty !== -1) return empty + 1
+  const attr = text.indexOf('=""')
+  if (attr !== -1) return attr + 2
+  return text.length
+}
+
+/**
  * パーツをエディタへ挿入する。挿入できたら true。
  * preferEnd: まだ触っていないエディタ向けに文書末尾へ追記する。
  */
@@ -108,6 +120,10 @@ export const insertSnippet = (
 
   const start: Position = { lineNumber: range.startLineNumber, column: range.startColumn }
   const end = computeEndPosition(start, text)
+  const caret =
+    snippet.lang === 'html'
+      ? computeEndPosition(start, text.slice(0, computeCaretOffset(text)))
+      : end
 
   editor.pushUndoStop()
   editor.executeEdits(
@@ -124,10 +140,10 @@ export const insertSnippet = (
         forceMoveMarkers: true,
       },
     ],
-    () => [new monaco.Selection(end.lineNumber, end.column, end.lineNumber, end.column)],
+    () => [new monaco.Selection(caret.lineNumber, caret.column, caret.lineNumber, caret.column)],
   )
   editor.pushUndoStop()
-  editor.revealPositionInCenterIfOutsideViewport(end)
+  editor.revealPositionInCenterIfOutsideViewport(caret)
   editor.focus()
   return true
 }

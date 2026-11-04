@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildInsertionText,
+  computeCaretOffset,
   computeEndPosition,
   getLineIndent,
   indentSnippet,
@@ -97,6 +98,18 @@ describe('computeEndPosition', () => {
     expect(computeEndPosition({ lineNumber: 2, column: 3 }, 'a\n  bc')).toEqual({ lineNumber: 3, column: 5 }))
 })
 
+describe('computeCaretOffset', () => {
+  it('空要素なら開始タグと閉じタグの間', () =>
+    expect(computeCaretOffset('<h1></h1>')).toBe(4))
+  it('複数行なら最初の空要素の間', () =>
+    expect(computeCaretOffset('<ul>\n  <li></li>\n</ul>')).toBe(11))
+  it('属性があっても開始タグの直後', () =>
+    expect(computeCaretOffset('<a href="#x"></a>')).toBe(13))
+  it('空要素がなければ最初の空の属性値の中', () =>
+    expect(computeCaretOffset('<img src="" alt="">')).toBe(10))
+  it('どちらもなければ末尾', () => expect(computeCaretOffset('abc')).toBe(3))
+})
+
 describe('insertSnippet', () => {
   it('カーソル位置に挿入し、undo 区切り→編集→区切り→reveal→focus の順', () => {
     const f = makeEditor([''], caret(1, 1))
@@ -112,6 +125,25 @@ describe('insertSnippet', () => {
     insertSnippet(f.editor, monaco, snip('a\nbc'), { preferEnd: false })
     expect(f.getCursor()).toEqual([new FakeSelection(2, 3, 2, 3)])
     expect(f.getRevealed()).toEqual({ lineNumber: 2, column: 3 })
+  })
+
+  it('空要素のパーツはタグの間にカーソルを置く', () => {
+    const f = makeEditor([''], caret(1, 1))
+    insertSnippet(f.editor, monaco, snip('<h1></h1>'), { preferEnd: false })
+    expect(f.getCursor()).toEqual([new FakeSelection(1, 5, 1, 5)])
+    expect(f.getRevealed()).toEqual({ lineNumber: 1, column: 5 })
+  })
+
+  it('インデント付き複数行でも最初の空要素の間に置く', () => {
+    const f = makeEditor(['  '], caret(1, 3))
+    insertSnippet(f.editor, monaco, snip('<ul>\n  <li></li>\n</ul>'), { preferEnd: false })
+    expect(f.getCursor()).toEqual([new FakeSelection(2, 9, 2, 9)])
+  })
+
+  it('HTML 以外は末尾にカーソルを置く', () => {
+    const f = makeEditor([''], caret(1, 1))
+    insertSnippet(f.editor, monaco, { ...snip('a="">'), lang: 'css' }, { preferEnd: false })
+    expect(f.getCursor()).toEqual([new FakeSelection(1, 6, 1, 6)])
   })
 
   it('選択範囲は置き換えられる', () => {
