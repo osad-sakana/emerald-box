@@ -14,6 +14,8 @@ import {
   saveEditorGroupSize,
   loadInstructorMode,
   saveInstructorMode,
+  loadSnippetDrawerOpen,
+  saveSnippetDrawerOpen,
   loadFontSizes,
   saveFontSizes,
   loadPreviewOptions,
@@ -92,6 +94,7 @@ describe('clearCode', () => {
     localStorage.setItem('emerald-box:instructor:v1', 'f')
     localStorage.setItem('emerald-box:font-size:v1', 'g')
     localStorage.setItem('emerald-box:preview-options:v1', 'h')
+    localStorage.setItem('emerald-box:snippet-drawer:v1', 'i')
 
     clearCode()
 
@@ -103,6 +106,7 @@ describe('clearCode', () => {
     expect(localStorage.getItem('emerald-box:instructor:v1')).toBeNull()
     expect(localStorage.getItem('emerald-box:font-size:v1')).toBeNull()
     expect(localStorage.getItem('emerald-box:preview-options:v1')).toBeNull()
+    expect(localStorage.getItem('emerald-box:snippet-drawer:v1')).toBeNull()
   })
 })
 
@@ -478,5 +482,25 @@ describe('loadPreviewOptions / savePreviewOptions', () => {
     const options = loadPreviewOptions()
     options.resetCss = true
     expect(loadPreviewOptions()).toEqual(DEFAULT_PREVIEW_OPTIONS)
+  })
+})
+
+describe('loadSnippetDrawerOpen / saveSnippetDrawerOpen', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  it('未保存なら null', () => expect(loadSnippetDrawerOpen()).toBeNull())
+
+  it('保存した true / false を復元する', () => {
+    saveSnippetDrawerOpen(false)
+    expect(loadSnippetDrawerOpen()).toBe(false)
+    saveSnippetDrawerOpen(true)
+    expect(loadSnippetDrawerOpen()).toBe(true)
+  })
+
+  it('不正な値は null にフォールバックする', () => {
+    localStorage.setItem('emerald-box:snippet-drawer:v1', 'yes')
+    expect(loadSnippetDrawerOpen()).toBeNull()
   })
 })
