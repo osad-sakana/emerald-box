@@ -51,6 +51,10 @@ pnpm preview      # ビルド結果のプレビュー
 - ペインを再表示・リサイズした後は対象エディタの `editor.layout()` を呼んでサイズを再計算する。
 - **`#editor-group`(縦並びレイアウト用ラッパー)の `contents`/`hidden` は必ずJS側で排他的に切り替える**。Tailwindのクラス定義順に頼って共存させない（バージョン更新で崩れるため）。
 
+## デプロイ
+
+本番は S3 + CloudFront（https://emerald-box.shisui.tokyo/）。main への push で `.github/workflows/deploy.yml` が自動デプロイする。手順・AWS 構築メモは `docs/deploy.md` を参照。`astro.config.mjs` に `base` は設定しない（ドメイン直下配信）。
+
 ## 公開について
 
 完全クライアントサイドで秘密情報を持たず、`public` リポジトリで公開可能。利用 OSS/フォントは MIT / SIL OFL 1.1 で、クレジットはアプリ内モーダルに表示済み。
