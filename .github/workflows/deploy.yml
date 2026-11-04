@@ -30,6 +30,9 @@ jobs:
       # pnpm を自動検出する。
       - name: Build with Astro
         uses: withastro/action@v3
+        with:
+          # Astro が Node >=22.23.4 を要求する。action の既定（Node 20）ではビルドが失敗する。
+          node-version: 22
 
   deploy:
     needs: build
