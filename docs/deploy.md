@@ -18,7 +18,7 @@ GitHub (main) ──push──▶ GitHub Actions ──OIDC──▶ IAM ロー�
 | 要素 | 役割 |
 |---|---|
 | S3 バケット | `dist/` の置き場。パブリックアクセスはすべてブロックし、CloudFront の OAC だけが読む |
-| CloudFront | HTTPS 配信。HTTP は HTTPS へリダイレクト。デフォルトルートオブジェクトは `index.html` |
+| CloudFront | HTTPS 配信（**Free プラン**）。HTTP は HTTPS へリダイレクト。デフォルトルートオブジェクトは `index.html` |
 | ACM 証明書 | CloudFront 用は **`us-east-1`** で発行する |
 | Route 53 | `emerald-box.shisui.tokyo` の A / AAAA（Alias）を CloudFront に向ける |
 
@@ -87,7 +87,8 @@ Secrets は使わない（OIDC のため保存する秘密がない）。
 3. **ディストリビューション**:
    - オリジン: S3 の REST エンドポイント + OAC。作成後に表示されるバケットポリシーを S3 に貼る
    - ビューワープロトコル: HTTP を HTTPS にリダイレクト、圧縮オン、キャッシュポリシーは CachingOptimized
-   - 代替ドメイン名 `emerald-box.shisui.tokyo`・ACM 証明書・デフォルトルートオブジェクト `index.html`
+   - 料金プランは **Free**（定額）。Emerald Box はカスタムのヘッダーポリシーが不要なので Free で足りる
+   - 代替ドメイン名 `emerald-box.shisui.tokyo`・ACM 証明書・デフォルトルートオブジェクト `index.html`（**先頭に `/` を付けない**。`/index.html` だと `/` が 403 になる）
    - WAF は有効にしない（費用が増える）
 4. **Route 53**: `emerald-box.shisui.tokyo` の A と AAAA を Alias で CloudFront に向ける。
 5. **IAM**:
@@ -107,10 +108,11 @@ Secrets は使わない（OIDC のため保存する秘密がない）。
 
 ## 課金の備え
 
-CloudFront の従量課金には上限がない。無料枠（毎月 1TB・1000 万リクエスト）を超えると転送量に応じて課金される。
+CloudFront は **Free プラン**（定額）で、超過料金は発生しない。利用量の上限はコンソールのプラン詳細で確認する。
+S3 の保存料と Route 53 のホストゾーン料は別にかかる（どちらも少額）。
 
-- **AWS Budgets**: 月額 $5 で、予測 50%・予測 100%・実績 100% の通知を設定する
-- 通知が来たら、請求画面で CloudFront の金額を確認し、想定外なら **CloudFront の対象ディストリビューションを「無効にする」**（課金がすぐ止まる）。原因を調べてから有効に戻す
+- **AWS Budgets**: 月額 $5 などで通知を設定しておくと安心
+- 上限を超えたり想定外の請求があったら、請求画面とプラン詳細を確認する。止めたいときは **CloudFront の対象ディストリビューションを「無効にする」**
 
 ## トラブルシュート
 
@@ -119,7 +121,7 @@ CloudFront の従量課金には上限がない。無料枠（毎月 1TB・1000 
 | Actions で `Could not assume role` / `AssumeRoleWithWebIdentity` | ロールの信頼ポリシーの `sub`（リポジトリ・ブランチ）や OIDC プロバイダー |
 | Actions の S3 で `AccessDenied` | ロールのポリシーのバケット名、`S3_BUCKET` の値 |
 | Actions の CloudFront で `AccessDenied` | ロールのポリシーのディストリビューション ID、`CLOUDFRONT_DISTRIBUTION_ID` の値 |
-| ブラウザで `403` | バケットポリシー（OAC）が貼られていない、または別のディストリビューション向け |
+| ブラウザで `403` | バケットポリシー（OAC）が貼られていない、または別のディストリビューション向け。`/index.html` は 200 で `/` だけ 403 なら、デフォルトルートオブジェクトが未設定、または `/index.html` と先頭に `/` が付いている |
 | 証明書エラー | ACM が `us-east-1` で発行済みか、代替ドメイン名の設定 |
 | 名前が引けない | Route 53 のレコード、ディストリビューションが有効か（無効だと Alias が応答しない） |
 | 更新が反映されない | 無効化が完了しているか（数十秒〜数分）、ブラウザのキャッシュ |
