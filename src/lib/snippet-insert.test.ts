@@ -140,6 +140,24 @@ describe('insertSnippet', () => {
     expect(f.getCursor()).toEqual([new FakeSelection(2, 9, 2, 9)])
   })
 
+  it('preferEnd で末尾行が空でなければ改行ぶん下の行のタグの間に置く', () => {
+    const f = makeEditor(['<h1>a</h1>'], caret(1, 1))
+    insertSnippet(f.editor, monaco, snip('<p></p>'), { preferEnd: true })
+    expect(f.getCursor()).toEqual([new FakeSelection(2, 4, 2, 4)])
+  })
+
+  it('行の途中へのインライン挿入は列がずれずタグの間に置く', () => {
+    const f = makeEditor(['ab'], caret(1, 2))
+    insertSnippet(f.editor, monaco, snip('<b></b>', false), { preferEnd: false })
+    expect(f.getCursor()).toEqual([new FakeSelection(1, 5, 1, 5)])
+  })
+
+  it('空要素と空の属性値の両方があればタグの間を優先する', () => {
+    const f = makeEditor([''], caret(1, 1))
+    insertSnippet(f.editor, monaco, snip('<a href=""></a>'), { preferEnd: false })
+    expect(f.getCursor()).toEqual([new FakeSelection(1, 12, 1, 12)])
+  })
+
   it('HTML 以外は末尾にカーソルを置く', () => {
     const f = makeEditor([''], caret(1, 1))
     insertSnippet(f.editor, monaco, { ...snip('a="">'), lang: 'css' }, { preferEnd: false })

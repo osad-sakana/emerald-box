@@ -1,9 +1,16 @@
 import { describe, expect, it } from 'vitest'
+import { computeCaretOffset } from './snippet-insert'
 import { SNIPPETS, SNIPPET_LANG_LABELS, findSnippet, snippetsByLang } from './snippets'
 
 const LANGS = ['html', 'css', 'javascript'] as const
 
 describe('SNIPPETS', () => {
+  it('HTML パーツはカーソルが末尾以外（タグの間か属性値の中）に入る', () => {
+    for (const s of SNIPPETS.filter((x) => x.lang === 'html')) {
+      expect(computeCaretOffset(s.code), s.id).toBeLessThan(s.code.length)
+    }
+  })
+
   it('id がすべて一意', () => {
     const ids = SNIPPETS.map((s) => s.id)
     expect(new Set(ids).size).toBe(ids.length)
