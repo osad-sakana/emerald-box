@@ -13,6 +13,7 @@ const EDITOR_GROUP_SIZE_KEY = 'emerald-box:editor-group-size:v1'
 const INSTRUCTOR_KEY = 'emerald-box:instructor:v1'
 const FONT_SIZE_KEY = 'emerald-box:font-size:v1'
 const PREVIEW_OPTIONS_KEY = 'emerald-box:preview-options:v1'
+const SNIPPET_DRAWER_KEY = 'emerald-box:snippet-drawer:v1'
 
 // ペイン全体の並び方向。
 export type LayoutMode = 'horizontal' | 'vertical'
@@ -127,6 +128,7 @@ export function clearCode(): void {
     localStorage.removeItem(INSTRUCTOR_KEY)
     localStorage.removeItem(FONT_SIZE_KEY)
     localStorage.removeItem(PREVIEW_OPTIONS_KEY)
+    localStorage.removeItem(SNIPPET_DRAWER_KEY)
   } catch (error) {
     console.error('リセットに失敗しました:', error)
   }
@@ -329,5 +331,28 @@ export function debounce<A extends unknown[]>(
   return (...args: A) => {
     if (timer) clearTimeout(timer)
     timer = setTimeout(() => fn(...args), delay)
+  }
+}
+
+// パーツ集ドロワーの開閉状態の読み込み。未保存・不正な値は null（呼び出し側が既定を決める）。
+export function loadSnippetDrawerOpen(): boolean | null {
+  if (typeof localStorage === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(SNIPPET_DRAWER_KEY)
+    if (raw === 'true') return true
+    if (raw === 'false') return false
+    return null
+  } catch (error) {
+    console.error('パーツ集の開閉状態の読み込みに失敗しました:', error)
+    return null
+  }
+}
+
+export function saveSnippetDrawerOpen(open: boolean): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(SNIPPET_DRAWER_KEY, String(open))
+  } catch (error) {
+    console.error('パーツ集の開閉状態の保存に失敗しました:', error)
   }
 }
