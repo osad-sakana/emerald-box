@@ -1,46 +1,72 @@
-name: Deploy to GitHub Pages
+name: Deploy (S3 + CloudFront)
 
 on:
-  # main への push で自動デプロイ
   push:
     branches: [main]
-  # 手動実行も可能にする
   workflow_dispatch:
 
-# GitHub Pages へのデプロイに必要な権限
+# OIDC でロールを引き受けるため id-token: write が必要
 permissions:
   contents: read
-  pages: write
   id-token: write
 
-# 同時実行は1つに制限（進行中のデプロイは完了させる）
+# 同期中に別のデプロイが走ると新旧ファイルが混ざるため直列にする
 concurrency:
-  group: pages
+  group: deploy
   cancel-in-progress: false
 
+env:
+  AWS_REGION: ap-northeast-1
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Astro を pnpm でビルドし、Pages 用アーティファクトを生成・アップロードする。
-      # withastro/action は pnpm-lock.yaml と package.json の packageManager から
-      # pnpm を自動検出する。
-      - name: Build with Astro
-        uses: withastro/action@v3
-        with:
-          # Astro が Node >=22.23.4 を要求する。action の既定（Node 20）ではビルドが失敗する。
-          node-version: 22
-
   deploy:
-    needs: build
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      # Astro が Node >=22.23.4 を要求する
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      # ロール ARN・バケット名・ディストリビューション ID は公開リポジトリに書かず Variables で渡す
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # _astro/ はファイル名にハッシュが付くので長期キャッシュにする。
+      # 古い版を参照中のタブが壊れないよう、_astro/ は --delete しない
+      - name: Sync hashed assets
+        run: |
+          aws s3 sync dist/_astro "s3://${{ vars.S3_BUCKET }}/_astro" \
+            --cache-control "public,max-age=31536000,immutable"
+
+      # それ以外（index.html など名前が変わらないもの）は毎回再検証させる。除外した _astro/ は --delete の対象外
+      - name: Sync everything else
+        run: |
+          aws s3 sync dist "s3://${{ vars.S3_BUCKET }}" \
+            --exclude "_astro/*" \
+            --delete \
+            --cache-control "no-cache"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --paths "/*"

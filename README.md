@@ -11,7 +11,7 @@ VS Code と同等の操作感（Monaco Editor）を備え、AI が生成した�
 [![Monaco Editor](https://img.shields.io/badge/Monaco_Editor-0.52-007ACC?logo=visualstudiocode&logoColor=white)](https://microsoft.github.io/monaco-editor/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-059669.svg)](#-ライセンス)
 
-**🌐 デモ: https://osad-sakana.github.io/emerald-box/**
+**🌐 デモ: https://emerald-box.shisui.tokyo/**
 
 </div>
 
@@ -69,7 +69,7 @@ pnpm build
 pnpm preview
 ```
 
-完全な静的サイト（SSG）なので、`dist/` を任意の静的ホスティング（GitHub Pages / Cloudflare Pages / Netlify など）にそのまま配置できます。
+完全な静的サイト（SSG）なので、`dist/` を任意の静的ホスティング（S3 + CloudFront / Cloudflare Pages / Netlify など）にそのまま配置できます。本番のデプロイ手順は [docs/deploy.md](docs/deploy.md) を参照してください。
 
 ---
 
