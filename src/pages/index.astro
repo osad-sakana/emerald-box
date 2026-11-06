@@ -778,10 +778,16 @@ import JsIcon from '../components/icons/JsIcon.astro'
       setJsApplied(false)
     })
 
-    // ✨ 自動整形: 全エディタを Monaco 標準の整形にかける（保存は内容変更イベントで自動）。
-    document.getElementById('btn-format')!.addEventListener('click', async () => {
-      const { failed } = await formatEditors(editors)
-      if (failed > 0) alert('一部のエディタを整形できませんでした。')
+    // 自動整形: 全エディタを Monaco 標準の整形にかける（保存は内容変更イベントで自動）。
+    const btnFormat = document.getElementById('btn-format') as HTMLButtonElement
+    btnFormat.addEventListener('click', async () => {
+      btnFormat.disabled = true
+      try {
+        const { failed } = await formatEditors(editors)
+        if (failed > 0) alert('一部のエディタを整形できませんでした。')
+      } finally {
+        btnFormat.disabled = false
+      }
     })
 
     // 環境初期化: localStorage をクリアしてリロード。

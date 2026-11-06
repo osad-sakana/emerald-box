@@ -2,7 +2,7 @@
 const FORMAT_ACTION_ID = 'editor.action.formatDocument'
 
 interface FormattableEditor {
-  getAction(id: string): { run(): Promise<void> } | null
+  getAction(id: string): { isSupported(): boolean; run(): Promise<void> } | null
 }
 
 export interface FormatResult {
@@ -18,7 +18,7 @@ export async function formatEditors(
     Object.values(editors).map(async (editor) => {
       try {
         const action = editor.getAction(FORMAT_ACTION_ID)
-        if (!action) return false
+        if (!action || !action.isSupported()) return false
         await action.run()
         return true
       } catch (error) {
