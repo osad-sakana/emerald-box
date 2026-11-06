@@ -33,7 +33,7 @@ export const parseWrapInput = (input: string): ParseResult => {
   const stripped = input.trim().replace(/^</, '').replace(/>$/, '').trim()
   if (stripped === '') return { ok: false, message: 'タグ名を入力してください' }
   const match = /^([a-zA-Z][a-zA-Z0-9-]*)(\s+[^<>]*)?$/.exec(stripped)
-  if (!match) return { ok: false, message: 'タグ名が正しくありません（例: div / section class="box"）' }
+  if (!match) return { ok: false, message: 'タグ名が正しくありません（半角で入力。例: div / section class="box"）' }
   const name = match[1]
   if (VOID_ELEMENTS.includes(name.toLowerCase())) {
     return { ok: false, message: `<${name}> は中身を持てないため囲めません` }
@@ -56,10 +56,16 @@ export const buildWrappedText = (
     return { text: tag.open + selected + tag.close, caretOffset: tag.open.length }
   }
   const lines = selected.split('\n')
+  const rest = lines.slice(1)
+  const common = Math.min(
+    ...rest.filter((l) => l.trim() !== '').map((l) => /^[ \t]*/.exec(l)![0].length),
+    Infinity,
+  )
+  const dedent = Number.isFinite(common) ? common : 0
   const body = lines
     .map((line, i) => {
       if (i === 0) return indent + INDENT_UNIT + line.trimStart()
-      return line === '' ? line : INDENT_UNIT + line
+      return line.trim() === '' ? '' : indent + INDENT_UNIT + line.slice(dedent)
     })
     .join('\n')
   const text = `${tag.open}\n${body}\n${indent}${tag.close}`
@@ -77,14 +83,22 @@ export const wrapSelection = (
   const sel = range ?? editor.getSelection()
   if (!model || !sel) return false
 
-  const monacoRange = new monaco.Range(
-    sel.startLineNumber, sel.startColumn, sel.endLineNumber, sel.endColumn,
-  )
+  const lineText = model.getLineContent(sel.startLineNumber)
+  const baseIndent = getLineIndent(lineText, Infinity)
+  const multiline = sel.endLineNumber > sel.startLineNumber
+  // 複数行: 終端が行頭なら前行末へ縮め、始端が行頭〜インデント内なら行頭へ広げる。
+  const endsAtLineHead = multiline && sel.endColumn === 1
+  const endLine = endsAtLineHead ? sel.endLineNumber - 1 : sel.endLineNumber
+  const endColumn = endsAtLineHead ? model.getLineMaxColumn(endLine) : sel.endColumn
+  const inIndent = multiline && lineText.slice(0, sel.startColumn - 1).trim() === ''
+  const startColumn = inIndent ? 1 : sel.startColumn
+  const monacoRange = new monaco.Range(sel.startLineNumber, startColumn, endLine, endColumn)
   const selected = editor.getValueInRange(monacoRange)
-  const indent = getLineIndent(model.getLineContent(sel.startLineNumber), sel.startColumn)
-  const { text, caretOffset } = buildWrappedText(selected, tag, indent)
+  const built = buildWrappedText(selected, tag, baseIndent)
+  const text = inIndent ? baseIndent + built.text : built.text
+  const caretOffset = built.caretOffset + (inIndent ? baseIndent.length : 0)
 
-  const start: Position = { lineNumber: sel.startLineNumber, column: sel.startColumn }
+  const start: Position = { lineNumber: sel.startLineNumber, column: startColumn }
   const caret = computeEndPosition(start, text.slice(0, selected === '' ? caretOffset : text.length))
 
   editor.pushUndoStop()
