@@ -63,9 +63,9 @@ const makeEditor = (line: string, selected: string, sel?: Record<string, number>
       getLineContent: () => line,
       getLineCount: () => 1,
       getLineMaxColumn: () => 10,
+      getValueInRange: () => selected,
     }),
     getSelection: () => ({ startLineNumber: 1, startColumn: 3, endLineNumber: 1, endColumn: 3 + selected.length, ...sel }),
-    getValueInRange: () => selected,
     pushUndoStop: () => undefined,
     executeEdits: (_s: string, edits: { text: string }[], cb?: () => unknown[]) => {
       calls.push({ text: edits[0].text, caret: cb?.()[0] })
