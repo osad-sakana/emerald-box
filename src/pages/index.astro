@@ -263,6 +263,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
   import { createInstructorController } from '../lib/instructor-mode'
   import { attachHtmlAutoClose } from '../lib/html-auto-close'
   import { createSnippetActions } from '../lib/snippet-actions'
+  import { formatEditors } from '../lib/format-editors'
   import { copyText } from '../lib/clipboard'
   import { attachDrawerEscape } from '../lib/snippet-drawer-keybinding'
 
@@ -775,6 +776,12 @@ import JsIcon from '../components/icons/JsIcon.astro'
     document.getElementById('btn-stop')!.addEventListener('click', () => {
       preview.forceStop(getState())
       setJsApplied(false)
+    })
+
+    // ✨ 自動整形: 全エディタを Monaco 標準の整形にかける（保存は内容変更イベントで自動）。
+    document.getElementById('btn-format')!.addEventListener('click', async () => {
+      const { failed } = await formatEditors(editors)
+      if (failed > 0) alert('一部のエディタを整形できませんでした。')
     })
 
     // 環境初期化: localStorage をクリアしてリロード。
