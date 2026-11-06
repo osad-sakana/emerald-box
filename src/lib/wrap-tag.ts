@@ -5,6 +5,7 @@ import {
   type Position,
   type RangeLike,
   type SnippetEditorLike,
+  type SnippetModelLike,
   type SnippetMonacoLike,
 } from './snippet-insert'
 
@@ -15,6 +16,11 @@ const VOID_ELEMENTS: readonly string[] = [
   'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
   'link', 'meta', 'source', 'track', 'wbr',
 ]
+
+/** Monaco では getValueInRange はエディタではなくモデルにある。 */
+export interface WrapModelLike extends SnippetModelLike {
+  getValueInRange(range: unknown): string
+}
 
 export interface WrapTag {
   readonly open: string
@@ -74,7 +80,7 @@ export const buildWrappedText = (
 
 /** 選択範囲をタグで囲む。囲めたら true。選択が空ならタグだけ挿入し、カーソルを中へ置く。 */
 export const wrapSelection = (
-  editor: SnippetEditorLike & { getValueInRange(range: unknown): string },
+  editor: Omit<SnippetEditorLike, 'getModel'> & { getModel(): WrapModelLike | null },
   monaco: SnippetMonacoLike,
   tag: WrapTag,
   range?: RangeLike,
@@ -93,7 +99,7 @@ export const wrapSelection = (
   const inIndent = multiline && lineText.slice(0, sel.startColumn - 1).trim() === ''
   const startColumn = inIndent ? 1 : sel.startColumn
   const monacoRange = new monaco.Range(sel.startLineNumber, startColumn, endLine, endColumn)
-  const selected = editor.getValueInRange(monacoRange)
+  const selected = model.getValueInRange(monacoRange)
   const built = buildWrappedText(selected, tag, baseIndent)
   const text = inIndent ? baseIndent + built.text : built.text
   const caretOffset = built.caretOffset + (inIndent ? baseIndent.length : 0)
