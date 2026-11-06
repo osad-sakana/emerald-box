@@ -41,6 +41,11 @@ describe('buildWrappedText', () => {
     const { text } = buildWrappedText('  <p>a</p>\n  <p>b</p>', tag, '  ')
     expect(text).toBe('<div>\n    <p>a</p>\n    <p>b</p>\n  </div>')
   })
+  it('2行目以降が1行目より深い場合は入れ子の差を保つ', () => {
+    expect(buildWrappedText('  <p>a\n    b</p>', tag, '  ').text).toBe(
+      '<div>\n    <p>a\n      b</p>\n  </div>',
+    )
+  })
   it('複数行内の空行にはインデントを付けない', () => {
     expect(buildWrappedText('a\n\nb', tag, '').text).toBe('<div>\n  a\n\n  b\n</div>')
   })
@@ -94,6 +99,13 @@ describe('wrapSelection', () => {
     const { editor, calls } = makeEditor('a', 'a\nb', { startColumn: 1, endLineNumber: 3, endColumn: 1 })
     wrapSelection(editor, monaco, { open: '<div>', close: '</div>' })
     expect(calls[0].text).toBe('<div>\n  a\n  b\n</div>')
+  })
+  it('1行を丸ごと(次行頭まで)選んでもインデントが二重にならない', () => {
+    const { editor, calls } = makeEditor('  <p>a</p>', '<p>a</p>', {
+      startColumn: 3, endLineNumber: 2, endColumn: 1,
+    })
+    wrapSelection(editor, monaco, { open: '<div>', close: '</div>' })
+    expect(calls[0].text).toBe('<div><p>a</p></div>')
   })
   it('選択がなければ false', () => {
     const { editor } = makeEditor('x', '')

@@ -61,7 +61,7 @@ export const buildWrappedText = (
     ...rest.filter((l) => l.trim() !== '').map((l) => /^[ \t]*/.exec(l)![0].length),
     Infinity,
   )
-  const dedent = Number.isFinite(common) ? common : 0
+  const dedent = Number.isFinite(common) ? Math.min(common, indent.length) : 0
   const body = lines
     .map((line, i) => {
       if (i === 0) return indent + INDENT_UNIT + line.trimStart()
@@ -85,11 +85,11 @@ export const wrapSelection = (
 
   const lineText = model.getLineContent(sel.startLineNumber)
   const baseIndent = getLineIndent(lineText, Infinity)
-  const multiline = sel.endLineNumber > sel.startLineNumber
   // 複数行: 終端が行頭なら前行末へ縮め、始端が行頭〜インデント内なら行頭へ広げる。
-  const endsAtLineHead = multiline && sel.endColumn === 1
+  const endsAtLineHead = sel.endLineNumber > sel.startLineNumber && sel.endColumn === 1
   const endLine = endsAtLineHead ? sel.endLineNumber - 1 : sel.endLineNumber
   const endColumn = endsAtLineHead ? model.getLineMaxColumn(endLine) : sel.endColumn
+  const multiline = endLine > sel.startLineNumber
   const inIndent = multiline && lineText.slice(0, sel.startColumn - 1).trim() === ''
   const startColumn = inIndent ? 1 : sel.startColumn
   const monacoRange = new monaco.Range(sel.startLineNumber, startColumn, endLine, endColumn)
