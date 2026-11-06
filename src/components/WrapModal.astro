@@ -1,0 +1,48 @@
+---
+// ラッピング用モーダル。HTML エディタの選択範囲を囲むタグを入力する。初期状態は非表示。
+---
+
+<div
+  id="wrap-modal"
+  class="fixed inset-0 z-50 hidden items-center justify-center p-4"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="wrap-title"
+>
+  <div id="wrap-backdrop" class="absolute inset-0 bg-black/60"></div>
+
+  <form
+    id="wrap-form"
+    class="relative w-full max-w-sm rounded-xl border border-emerald-800 bg-slate-900 p-5 shadow-2xl"
+  >
+    <h2 id="wrap-title" class="mb-1 text-base font-bold text-slate-100">タグで囲む</h2>
+    <p class="mb-3 text-xs text-slate-400">
+      HTML の選択範囲を囲むタグを入力してください（例: div / section class="box"）
+    </p>
+    <input
+      id="wrap-input"
+      type="text"
+      autocomplete="off"
+      spellcheck="false"
+      placeholder="div"
+      aria-describedby="wrap-error"
+      class="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-sm text-slate-100 outline-none focus:border-emerald-500"
+    />
+    <p id="wrap-error" class="mt-2 hidden text-xs text-red-400" role="alert"></p>
+    <div class="mt-4 flex justify-end gap-2">
+      <button
+        id="wrap-cancel"
+        type="button"
+        class="rounded-md bg-slate-700 px-3 py-1.5 text-sm font-medium text-slate-100 transition hover:bg-slate-600"
+      >
+        キャンセル
+      </button>
+      <button
+        type="submit"
+        class="rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-emerald-500"
+      >
+        囲む
+      </button>
+    </div>
+  </form>
+</div>

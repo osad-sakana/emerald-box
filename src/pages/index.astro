@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro'
 import Header from '../components/Header.astro'
 import Credits from '../components/Credits.astro'
 import SnippetDrawer from '../components/SnippetDrawer.astro'
+import WrapModal from '../components/WrapModal.astro'
 import Html5Icon from '../components/icons/Html5Icon.astro'
 import Css3Icon from '../components/icons/Css3Icon.astro'
 import JsIcon from '../components/icons/JsIcon.astro'
@@ -23,6 +24,15 @@ import JsIcon from '../components/icons/JsIcon.astro'
           class="rounded-md bg-emerald-600 px-3 py-1 text-sm font-medium text-white transition"
         >
           パーツ集
+        </button>
+        <button
+          id="btn-wrap"
+          type="button"
+          aria-haspopup="dialog"
+          title="HTMLの選択範囲をタグで囲む"
+          class="rounded-md bg-slate-700 px-3 py-1 text-sm font-medium text-slate-100 transition hover:bg-emerald-600 active:scale-95"
+        >
+          ラッピング
         </button>
 
         <span class="mx-2 h-4 w-px bg-slate-700" aria-hidden="true"></span>
@@ -223,6 +233,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
   </div>
 
   <Credits />
+  <WrapModal />
 </Layout>
 
 <script>
@@ -264,6 +275,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
   import { attachHtmlAutoClose } from '../lib/html-auto-close'
   import { createSnippetActions } from '../lib/snippet-actions'
   import { copyText } from '../lib/clipboard'
+  import { parseWrapInput, wrapSelection } from '../lib/wrap-tag'
   import { attachDrawerEscape } from '../lib/snippet-drawer-keybinding'
 
   // Monaco を CDN から読み込む。
@@ -658,6 +670,50 @@ import JsIcon from '../components/icons/JsIcon.astro'
         const code = btn.closest('li')?.querySelector('pre')
         if (code) window.getSelection()?.selectAllChildren(code)
       }
+    })
+
+    // ラッピング: モーダルで入力したタグで HTML エディタの選択範囲を囲む。
+    // モーダルを開くとエディタのフォーカスが外れるため、開く時点の選択範囲を保持する。
+    const wrapModal = document.getElementById('wrap-modal')!
+    const wrapForm = document.getElementById('wrap-form') as HTMLFormElement
+    const wrapInput = document.getElementById('wrap-input') as HTMLInputElement
+    const wrapError = document.getElementById('wrap-error')!
+    let wrapRange: ReturnType<typeof editors.html.getSelection> = null
+    const setWrapOpen = (open: boolean) => {
+      wrapModal.classList.toggle('hidden', !open)
+      wrapModal.classList.toggle('flex', open)
+    }
+    const closeWrap = () => {
+      setWrapOpen(false)
+      editors.html.focus()
+    }
+    document.getElementById('btn-wrap')!.addEventListener('click', () => {
+      wrapRange = editors.html.getSelection()
+      wrapInput.value = ''
+      wrapError.classList.add('hidden')
+      setWrapOpen(true)
+      wrapInput.focus()
+    })
+    document.getElementById('wrap-cancel')!.addEventListener('click', closeWrap)
+    document.getElementById('wrap-backdrop')!.addEventListener('click', closeWrap)
+    wrapModal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeWrap()
+    })
+    wrapForm.addEventListener('submit', (e) => {
+      e.preventDefault()
+      const parsed = parseWrapInput(wrapInput.value)
+      if (!parsed.ok) {
+        wrapError.textContent = parsed.message
+        wrapError.classList.remove('hidden')
+        return
+      }
+      if (!panels.html) {
+        panels = { ...panels, html: true }
+        savePanels(panels)
+        syncPanels()
+      }
+      wrapSelection(editors.html, monaco, parsed.tag, wrapRange ?? undefined)
+      closeWrap()
     })
 
     // ガターのドラッグで隣接2要素の相対サイズを変更する。
