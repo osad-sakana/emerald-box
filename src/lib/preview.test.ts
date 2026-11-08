@@ -84,6 +84,13 @@ describe('PreviewController', () => {
       expect(frame.srcdoc).toContain('cdn.tailwindcss.com')
     })
 
+    it('Tailwind CDN はバージョンを固定して読み込む（最新版に自動で変わらない）', () => {
+      controller.setOptions({ resetCss: false, tailwind: true })
+      controller.renderMarkup(state)
+      const frame = host.querySelector('iframe') as HTMLIFrameElement
+      expect(frame.srcdoc).toMatch(/cdn\.tailwindcss\.com\/\d+\.\d+\.\d+/)
+    })
+
     it('resetCss: true にすると reset CSS が含まれる', () => {
       controller.setOptions({ resetCss: true, tailwind: true })
       controller.renderMarkup(state)
