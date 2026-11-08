@@ -1,7 +1,8 @@
 // iframe を用いたライブプレビューと、JS強制終了（破棄・再生成）の制御。
 import { DEFAULT_PREVIEW_OPTIONS, type CodeState, type PreviewOptions } from './storage'
 
-const TAILWIND_CDN = 'https://cdn.tailwindcss.com'
+// バージョンを固定する（固定しないと最新版に自動で切り替わり、挙動変化や配信元改ざんの影響を受ける）
+const TAILWIND_CDN = 'https://cdn.tailwindcss.com/3.4.17'
 
 // 「Reset CSS」有効時に適用する最小限のブラウザデフォルトリセット。
 // ユーザーCSSはbody末尾にあるため、同じ詳細度なら常にこれより優先される

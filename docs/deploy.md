@@ -114,6 +114,21 @@ S3 の保存料と Route 53 のホストゾーン料は別にかかる（どち�
 - **AWS Budgets**: 月額 $5 などで通知を設定しておくと安心
 - 上限を超えたり想定外の請求があったら、請求画面とプラン詳細を確認する。止めたいときは **CloudFront の対象ディストリビューションを「無効にする」**
 
+## 推奨セキュリティヘッダー
+
+現状、本番は COOP/COEP を含めセキュリティ関連のヘッダーを何も返していない。Response Headers Policy（カスタム）を使える料金プランなら、次を付けると安全になる（「オリジンの値を上書き」オン）。
+
+| ヘッダー | 値 | 目的 |
+|---|---|---|
+| `X-Frame-Options` | `DENY` | 他サイトが iframe で埋め込むクリックジャッキングの防止 |
+| `X-Content-Type-Options` | `nosniff` | MIME スニッフィング防止 |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | HTTPS 強制 |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | 他サイトへ URL を渡しすぎない |
+
+- **CSP は付けない（または慎重に）**: プレビューは `srcdoc` の iframe で、親ページの CSP を継承する。親に厳しい CSP を付けると、利用者が書くインラインの `<script>` や Tailwind CDN が動かなくなる。ユーザーコードの隔離は iframe の `sandbox`（`allow-same-origin` なし）で担保している。
+- クリックジャッキング対策に CSP の `frame-ancestors` を使うと同じ継承の影響が出るため、`X-Frame-Options` を使う。
+- COOP/COEP は付けない（上記のとおり CDN 読み込みがブロックされる）。
+
 ## トラブルシュート
 
 | 症状 | 原因の目安 |
