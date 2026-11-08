@@ -21,7 +21,7 @@
     "astro": "^4.16.19"
   },
   "devDependencies": {
-    "@astrojs/tailwind": "^5.1.5",
+    "@astrojs/tailwind": "^6.0.2",
     "@monaco-editor/loader": "^1.7.0",
     "@vitest/coverage-v8": "^4.1.12",
     "happy-dom": "^20.14.6",
