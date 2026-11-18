@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from 'vitest'
-import { copyText } from './clipboard'
+import { copyText, readText } from './clipboard'
 
 const makeDoc = (exec: () => boolean) =>
   ({
@@ -44,5 +44,27 @@ describe('copyText', () => {
     })
     expect(r).toBe('failed')
     expect(document.querySelector('textarea')).toBeNull()
+  })
+})
+
+describe('readText', () => {
+  it('テキストを返す', async () => {
+    const r = await readText({ clipboard: { readText: async () => 'abc' }, isSecureContext: true })
+    expect(r).toEqual({ result: 'ok', text: 'abc' })
+  })
+  it('空文字・空白のみは empty', async () => {
+    const r = await readText({ clipboard: { readText: async () => ' \n' }, isSecureContext: true })
+    expect(r).toEqual({ result: 'empty' })
+  })
+  it('非セキュアコンテキストや API なしは unsupported', async () => {
+    expect(await readText({ clipboard: { readText: async () => 'a' }, isSecureContext: false })).toEqual({ result: 'unsupported' })
+    expect(await readText({ isSecureContext: true })).toEqual({ result: 'unsupported' })
+  })
+  it('reject は denied', async () => {
+    const r = await readText({
+      clipboard: { readText: () => Promise.reject(new Error('x')) },
+      isSecureContext: true,
+    })
+    expect(r).toEqual({ result: 'denied' })
   })
 })

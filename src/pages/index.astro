@@ -21,7 +21,7 @@ import JsIcon from '../components/icons/JsIcon.astro'
           type="button"
           aria-expanded="true"
           aria-controls="snippet-drawer"
-          class="rounded-md bg-emerald-600 px-3 py-1 text-sm font-medium text-white transition"
+          class="eb-hide-in-ai rounded-md bg-emerald-600 px-3 py-1 text-sm font-medium text-white transition"
         >
           パーツ集
         </button>
@@ -30,12 +30,12 @@ import JsIcon from '../components/icons/JsIcon.astro'
           type="button"
           aria-haspopup="dialog"
           title="HTMLの選択範囲をタグで囲む"
-          class="rounded-md bg-slate-700 px-3 py-1 text-sm font-medium text-slate-100 transition hover:bg-emerald-600 active:scale-95"
+          class="eb-hide-in-ai rounded-md bg-slate-700 px-3 py-1 text-sm font-medium text-slate-100 transition hover:bg-emerald-600 active:scale-95"
         >
           ラッピング
         </button>
 
-        <span class="mx-2 h-4 w-px bg-slate-700" aria-hidden="true"></span>
+        <span class="eb-hide-in-ai mx-2 h-4 w-px bg-slate-700" aria-hidden="true"></span>
 
         <span class="mr-1 text-[11px] font-medium text-slate-500">表示:</span>
         <button
@@ -118,6 +118,11 @@ import JsIcon from '../components/icons/JsIcon.astro'
           +
         </button>
 
+        <span
+          id="paste-status"
+          aria-live="polite"
+          class="eb-ai-only ml-3 text-xs text-emerald-400"></span>
+
         <span id="instructor-toolbar-group" class="hidden items-center gap-1">
           <span class="mx-2 h-4 w-px bg-slate-700" aria-hidden="true"></span>
           <span class="mr-1 text-[11px] font-medium text-slate-500">講師モード:</span>
@@ -150,6 +155,15 @@ import JsIcon from '../components/icons/JsIcon.astro'
             <div class="flex items-center gap-1.5 border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
               <Html5Icon class="h-3 w-3 shrink-0" />
               HTML
+              <button
+                type="button"
+                class="paste-replace eb-ai-only ml-auto shrink-0 items-center rounded-md bg-slate-700 px-2.5 py-0.5 text-[11px] font-semibold normal-case tracking-normal text-slate-100 transition hover:bg-emerald-600 active:scale-95 disabled:opacity-50"
+                data-lang="html"
+                aria-label="HTMLに貼り付け"
+                disabled
+              >
+                貼り付け
+              </button>
             </div>
             <div id="editor-html" class="min-h-0 flex-1"></div>
           </div>
@@ -168,6 +182,15 @@ import JsIcon from '../components/icons/JsIcon.astro'
             <div class="flex items-center gap-1.5 border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
               <Css3Icon class="h-3 w-3 shrink-0" />
               CSS
+              <button
+                type="button"
+                class="paste-replace eb-ai-only ml-auto shrink-0 items-center rounded-md bg-slate-700 px-2.5 py-0.5 text-[11px] font-semibold normal-case tracking-normal text-slate-100 transition hover:bg-emerald-600 active:scale-95 disabled:opacity-50"
+                data-lang="css"
+                aria-label="CSSに貼り付け"
+                disabled
+              >
+                貼り付け
+              </button>
             </div>
             <div id="editor-css" class="min-h-0 flex-1"></div>
           </div>
@@ -190,6 +213,15 @@ import JsIcon from '../components/icons/JsIcon.astro'
             <div class="flex items-center gap-1.5 border-b border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400">
               <JsIcon class="h-3 w-3 shrink-0" />
               JavaScript
+              <button
+                type="button"
+                class="paste-replace eb-ai-only ml-auto shrink-0 items-center rounded-md bg-slate-700 px-2.5 py-0.5 text-[11px] font-semibold normal-case tracking-normal text-slate-100 transition hover:bg-emerald-600 active:scale-95 disabled:opacity-50"
+                data-lang="javascript"
+                aria-label="JavaScriptに貼り付け"
+                disabled
+              >
+                貼り付け
+              </button>
             </div>
             <div id="editor-javascript" class="min-h-0 flex-1"></div>
           </div>
@@ -275,9 +307,10 @@ import JsIcon from '../components/icons/JsIcon.astro'
   import { attachHtmlAutoClose } from '../lib/html-auto-close'
   import { createSnippetActions } from '../lib/snippet-actions'
   import { formatEditors } from '../lib/format-editors'
-  import { copyText } from '../lib/clipboard'
+  import { copyText, readText } from '../lib/clipboard'
   import { parseWrapInput, wrapSelection } from '../lib/wrap-tag'
   import { attachDrawerEscape } from '../lib/snippet-drawer-keybinding'
+  import { attachAiWorkshop } from '../lib/ai-workshop-ui'
 
   // Monaco を CDN から読み込む。
   loader.config({
@@ -357,6 +390,19 @@ import JsIcon from '../components/icons/JsIcon.astro'
     })
     btnBaseline.addEventListener('click', () => {
       instructor.captureBaseline()
+    })
+
+    // AIワークショップモード: 起動時はクエリだけで決め、保存しない（配線は lib/ai-workshop-ui.ts）。
+    const aiWorkshop = attachAiWorkshop({
+      doc: document,
+      location,
+      history,
+      editors,
+      models,
+      monaco,
+      readClipboard: () =>
+        readText({ clipboard: navigator.clipboard, isSecureContext: window.isSecureContext }),
+      isMac: /Mac|iPhone|iPad/.test(navigator.userAgent),
     })
 
     // フォントサイズ変更。
@@ -848,18 +894,21 @@ import JsIcon from '../components/icons/JsIcon.astro'
     // HTML/CSSの変更でプレビューを再描画するとJSは含まれなくなるため、
     // その都度「JS未実行」の状態に戻す。
     models.html.onDidChangeContent(() => {
+      aiWorkshop.onContentChange('html')
       preview.renderMarkup(getState())
       setJsApplied(false)
       persist()
       refreshInstructorDiff()
     })
     models.css.onDidChangeContent(() => {
+      aiWorkshop.onContentChange('css')
       preview.renderMarkup(getState())
       setJsApplied(false)
       persist()
       refreshInstructorDiff()
     })
     models.javascript.onDidChangeContent(() => {
+      aiWorkshop.onContentChange('javascript')
       setJsApplied(false)
       persist()
       refreshInstructorDiff()

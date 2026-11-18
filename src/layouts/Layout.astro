@@ -18,6 +18,15 @@ const { title = 'Emerald Box — Web Sandbox' } = Astro.props
     />
     <meta name="theme-color" content="#059669" />
     <title>{title}</title>
+    <!-- AIワークショップモード: Monaco 読み込み待ちの間にパーツ集が見えないよう、描画前にクエリを見て印を付ける。 -->
+    <!-- 判定条件（パラメータ名・値）は src/lib/ai-workshop.ts の parseAiWorkshopParam と揃えること。 -->
+    <script is:inline>
+      try {
+        if (new URLSearchParams(location.search).get('ai-workshop') === 'true') {
+          document.documentElement.setAttribute('data-ai-workshop', 'true')
+        }
+      } catch {}
+    </script>
   </head>
   <body class="h-full overflow-hidden bg-slate-950 font-sans text-slate-100 antialiased">
     <slot />
@@ -55,6 +64,17 @@ const { title = 'Emerald Box — Web Sandbox' } = Astro.props
   body {
     margin: 0;
     height: 100%;
+  }
+
+  /* AIワークショップモード: パーツ集・ラッピングを隠し、貼り付けボタンを出す */
+  .eb-ai-only {
+    display: none;
+  }
+  html[data-ai-workshop='true'] .eb-hide-in-ai {
+    display: none !important;
+  }
+  html[data-ai-workshop='true'] .eb-ai-only {
+    display: inline-flex;
   }
 
   /* 講師モード: 基準からの変更行ハイライト */
