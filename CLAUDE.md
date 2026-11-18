@@ -28,6 +28,7 @@ pnpm preview      # ビルド結果のプレビュー
   - 表示状態・サイズ（flex-grow 比率）・コード・レイアウト方向（横並び/縦並び）・講師モード・文字サイズ・プレビューオプション（reset CSS / Tailwind CSS）はそれぞれ別キーで `localStorage` に永続化（`emerald-box:code/panels/sizes/layout/editor-group-size/instructor/font-size/preview-options:v1`）。
   - エディタは `EditorLang`（preview を除く3種）にのみ存在。`preview` を扱う箇所は `isEditorLang()` でガードする。
   - **レイアウトモード**: デフォルトは横並び。「縦並び」では HTML/CSS/JS の3エディタだけを縦積みにし、プレビューは引き続き右側に横並びで残す。`#editor-group` という透過ラッパー（`display: contents`）で実現しており、横並び時はボックスとして存在しないため既存のガター/リサイズロジックが無改造で動く。縦並び時のみ `flex flex-col` に切り替わる。
+- **AIワークショップモード**: `?ai-workshop=true`（小文字 `true` のみ）で起動時にオン。講師モードと違い `localStorage` には保存せず、メニュー（`#btn-ai-workshop`）で切り替えると `history.replaceState` で URL のクエリを付け外しする。オン中は `<html data-ai-workshop="true">`（`Layout.astro` の inline script が描画前に付与）で `.eb-hide-in-ai`（パーツ集・ラッピング）を CSS で隠し、`.eb-ai-only`（各ペイン見出しの「貼り付け」/「すべて消して貼り付け」ボタン）を表示する。ドロワーの保存値は書き換えない（`ai-workshop:state` イベントで `setOpen(..., false)`）。純関数は `src/lib/ai-workshop.ts`、全置換は `src/lib/paste-replace.ts`（`setValue` ではなく `executeEdits` で undo 可能）。
 - `src/lib/preview.ts` の `PreviewController` が iframe を管理。
   - `renderMarkup()`: HTML/CSS のみ反映（ライブプレビュー）。
   - `runWithJs()`: JS を含めて実行（「JS実行」ボタン）。

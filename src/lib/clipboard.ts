@@ -35,3 +35,25 @@ export const copyText = async (text: string, deps: ClipboardDeps): Promise<CopyR
   }
   return copyWithExecCommand(text, deps.doc) ? 'exec-command' : 'failed'
 }
+
+export type ReadResult =
+  | { readonly result: 'ok'; readonly text: string }
+  | { readonly result: 'empty' }
+  | { readonly result: 'unsupported' }
+  | { readonly result: 'denied' }
+
+export interface ReadClipboardDeps {
+  clipboard?: { readText(): Promise<string> }
+  isSecureContext: boolean
+}
+
+/** クリップボードの読み取り。非対応・権限拒否は結果として返し、呼び出し側が手動貼り付けを案内する。 */
+export const readText = async (deps: ReadClipboardDeps): Promise<ReadResult> => {
+  if (!deps.isSecureContext || !deps.clipboard?.readText) return { result: 'unsupported' }
+  try {
+    const text = await deps.clipboard.readText()
+    return text === '' ? { result: 'empty' } : { result: 'ok', text }
+  } catch {
+    return { result: 'denied' }
+  }
+}
