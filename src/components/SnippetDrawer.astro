@@ -171,7 +171,9 @@ const groups = LANGS.map((lang) => {
   }
   selectTab('html')
   // 保存値 → 画面幅の順で初期状態を決める。マークアップは開状態で出力しているため、閉じる場合のみ反映される。
-  setOpen(resolveInitialDrawerOpen(loadSnippetDrawerOpen(), window.innerWidth), false)
+  // AIワークショップモードで起動した場合は閉じた扱いにする（Monaco 読込中の Esc で保存値が上書きされないように）。
+  const aiWorkshopAtBoot = document.documentElement.dataset.aiWorkshop === 'true'
+  setOpen(aiWorkshopAtBoot ? false : resolveInitialDrawerOpen(loadSnippetDrawerOpen(), window.innerWidth), false)
 
   // AIワークショップモード: ON の間は閉じた扱い（保存値は書き換えない）、OFF で保存値/画面幅の初期状態へ戻す。
   document.addEventListener(AI_WORKSHOP_STATE_EVENT, (e) => {

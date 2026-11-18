@@ -29,6 +29,11 @@ describe('buildAiWorkshopUrl', () => {
       'https://x.test/?ai-workshop=true',
     )
   })
+  it('他のクエリは URLSearchParams の形式に再シリアライズされる（仕様として許容）', () => {
+    expect(buildAiWorkshopUrl('https://x.test/?q=a%20b', true)).toBe(
+      'https://x.test/?q=a+b&ai-workshop=true',
+    )
+  })
   it('OFF でパラメータを削除する', () => {
     expect(buildAiWorkshopUrl('https://x.test/?a=1&ai-workshop=true#h', false)).toBe(
       'https://x.test/?a=1#h',

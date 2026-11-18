@@ -19,6 +19,7 @@ const { title = 'Emerald Box — Web Sandbox' } = Astro.props
     <meta name="theme-color" content="#059669" />
     <title>{title}</title>
     <!-- AIワークショップモード: Monaco 読み込み待ちの間にパーツ集が見えないよう、描画前にクエリを見て印を付ける。 -->
+    <!-- 判定条件（パラメータ名・値）は src/lib/ai-workshop.ts の parseAiWorkshopParam と揃えること。 -->
     <script is:inline>
       try {
         if (new URLSearchParams(location.search).get('ai-workshop') === 'true') {

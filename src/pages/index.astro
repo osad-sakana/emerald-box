@@ -157,8 +157,10 @@ import JsIcon from '../components/icons/JsIcon.astro'
               HTML
               <button
                 type="button"
-                class="paste-replace eb-ai-only ml-auto shrink-0 items-center rounded-md bg-slate-700 px-2.5 py-0.5 text-[11px] font-semibold normal-case tracking-normal text-slate-100 transition hover:bg-emerald-600 active:scale-95"
+                class="paste-replace eb-ai-only ml-auto shrink-0 items-center rounded-md bg-slate-700 px-2.5 py-0.5 text-[11px] font-semibold normal-case tracking-normal text-slate-100 transition hover:bg-emerald-600 active:scale-95 disabled:opacity-50"
                 data-lang="html"
+                aria-label="HTMLに貼り付け"
+                disabled
               >
                 貼り付け
               </button>
@@ -182,8 +184,10 @@ import JsIcon from '../components/icons/JsIcon.astro'
               CSS
               <button
                 type="button"
-                class="paste-replace eb-ai-only ml-auto shrink-0 items-center rounded-md bg-slate-700 px-2.5 py-0.5 text-[11px] font-semibold normal-case tracking-normal text-slate-100 transition hover:bg-emerald-600 active:scale-95"
+                class="paste-replace eb-ai-only ml-auto shrink-0 items-center rounded-md bg-slate-700 px-2.5 py-0.5 text-[11px] font-semibold normal-case tracking-normal text-slate-100 transition hover:bg-emerald-600 active:scale-95 disabled:opacity-50"
                 data-lang="css"
+                aria-label="CSSに貼り付け"
+                disabled
               >
                 貼り付け
               </button>
@@ -211,8 +215,10 @@ import JsIcon from '../components/icons/JsIcon.astro'
               JavaScript
               <button
                 type="button"
-                class="paste-replace eb-ai-only ml-auto shrink-0 items-center rounded-md bg-slate-700 px-2.5 py-0.5 text-[11px] font-semibold normal-case tracking-normal text-slate-100 transition hover:bg-emerald-600 active:scale-95"
+                class="paste-replace eb-ai-only ml-auto shrink-0 items-center rounded-md bg-slate-700 px-2.5 py-0.5 text-[11px] font-semibold normal-case tracking-normal text-slate-100 transition hover:bg-emerald-600 active:scale-95 disabled:opacity-50"
                 data-lang="javascript"
+                aria-label="JavaScriptに貼り付け"
+                disabled
               >
                 貼り付け
               </button>
@@ -301,17 +307,10 @@ import JsIcon from '../components/icons/JsIcon.astro'
   import { attachHtmlAutoClose } from '../lib/html-auto-close'
   import { createSnippetActions } from '../lib/snippet-actions'
   import { formatEditors } from '../lib/format-editors'
-  import { copyText } from '../lib/clipboard'
+  import { copyText, readText } from '../lib/clipboard'
   import { parseWrapInput, wrapSelection } from '../lib/wrap-tag'
   import { attachDrawerEscape } from '../lib/snippet-drawer-keybinding'
-  import {
-    AI_WORKSHOP_STATE_EVENT,
-    buildAiWorkshopUrl,
-    parseAiWorkshopParam,
-    pasteButtonLabel,
-  } from '../lib/ai-workshop'
-  import { readText } from '../lib/clipboard'
-  import { replaceAll } from '../lib/paste-replace'
+  import { attachAiWorkshop } from '../lib/ai-workshop-ui'
 
   // Monaco を CDN から読み込む。
   loader.config({
@@ -393,55 +392,18 @@ import JsIcon from '../components/icons/JsIcon.astro'
       instructor.captureBaseline()
     })
 
-    // AIワークショップモード: 起動時はクエリだけで決め、保存しない（メニュー切替は URL のクエリに反映）。
-    const btnAiWorkshop = document.getElementById('btn-ai-workshop')!
-    const pasteStatus = document.getElementById('paste-status')!
-    const pasteButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.paste-replace'))
-    let aiWorkshop = parseAiWorkshopParam(location.search)
-    const syncPasteLabels = () => {
-      for (const btn of pasteButtons) {
-        btn.textContent = pasteButtonLabel(models[btn.dataset.lang as EditorLang].getValue())
-      }
-    }
-    const syncAiWorkshopUi = () => {
-      document.documentElement.toggleAttribute('data-ai-workshop', aiWorkshop)
-      if (aiWorkshop) document.documentElement.setAttribute('data-ai-workshop', 'true')
-      btnAiWorkshop.setAttribute('aria-pressed', String(aiWorkshop))
-      btnAiWorkshop.classList.toggle('bg-emerald-600', aiWorkshop)
-      btnAiWorkshop.classList.toggle('text-white', aiWorkshop)
-      btnAiWorkshop.classList.toggle('text-slate-400', !aiWorkshop)
-      btnAiWorkshop.classList.toggle('hover:text-emerald-400', !aiWorkshop)
-      if (!aiWorkshop) pasteStatus.textContent = ''
-      syncPasteLabels()
-      document.dispatchEvent(new CustomEvent(AI_WORKSHOP_STATE_EVENT, { detail: aiWorkshop }))
-    }
-    syncAiWorkshopUi()
-    btnAiWorkshop.addEventListener('click', () => {
-      aiWorkshop = !aiWorkshop
-      history.replaceState(null, '', buildAiWorkshopUrl(location.href, aiWorkshop))
-      syncAiWorkshopUi()
+    // AIワークショップモード: 起動時はクエリだけで決め、保存しない（配線は lib/ai-workshop-ui.ts）。
+    const aiWorkshop = attachAiWorkshop({
+      doc: document,
+      location,
+      history,
+      editors,
+      models,
+      monaco,
+      readClipboard: () =>
+        readText({ clipboard: navigator.clipboard, isSecureContext: window.isSecureContext }),
+      isMac: /Mac|iPhone|iPad/.test(navigator.userAgent),
     })
-    for (const btn of pasteButtons) {
-      btn.addEventListener('click', async () => {
-        const lang = btn.dataset.lang as EditorLang
-        const res = await readText({
-          clipboard: navigator.clipboard,
-          isSecureContext: window.isSecureContext,
-        })
-        if (res.result === 'ok') {
-          replaceAll(editors[lang], monaco, res.text)
-          pasteStatus.textContent = ''
-        } else if (res.result === 'empty') {
-          pasteStatus.textContent = 'クリップボードが空です'
-        } else {
-          // 読み取れない環境: 内容は消さず、全選択して手動貼り付けを案内する。
-          editors[lang].focus()
-          editors[lang].trigger('paste-replace', 'editor.action.selectAll', null)
-          const key = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘+V' : 'Ctrl+V'
-          pasteStatus.textContent = `全選択しました。${key} で貼り付けてください`
-        }
-      })
-    }
 
     // フォントサイズ変更。
     const fontSizeDisplay = document.getElementById('font-size-display')!
@@ -932,21 +894,21 @@ import JsIcon from '../components/icons/JsIcon.astro'
     // HTML/CSSの変更でプレビューを再描画するとJSは含まれなくなるため、
     // その都度「JS未実行」の状態に戻す。
     models.html.onDidChangeContent(() => {
-      syncPasteLabels()
+      aiWorkshop.onContentChange('html')
       preview.renderMarkup(getState())
       setJsApplied(false)
       persist()
       refreshInstructorDiff()
     })
     models.css.onDidChangeContent(() => {
-      syncPasteLabels()
+      aiWorkshop.onContentChange('css')
       preview.renderMarkup(getState())
       setJsApplied(false)
       persist()
       refreshInstructorDiff()
     })
     models.javascript.onDidChangeContent(() => {
-      syncPasteLabels()
+      aiWorkshop.onContentChange('javascript')
       setJsApplied(false)
       persist()
       refreshInstructorDiff()
