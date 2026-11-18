@@ -52,7 +52,7 @@ export const readText = async (deps: ReadClipboardDeps): Promise<ReadResult> => 
   if (!deps.isSecureContext || !deps.clipboard?.readText) return { result: 'unsupported' }
   try {
     const text = await deps.clipboard.readText()
-    return text === '' ? { result: 'empty' } : { result: 'ok', text }
+    return text.trim() === '' ? { result: 'empty' } : { result: 'ok', text }
   } catch {
     return { result: 'denied' }
   }

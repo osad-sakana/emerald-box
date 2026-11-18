@@ -52,8 +52,8 @@ describe('readText', () => {
     const r = await readText({ clipboard: { readText: async () => 'abc' }, isSecureContext: true })
     expect(r).toEqual({ result: 'ok', text: 'abc' })
   })
-  it('空文字は empty', async () => {
-    const r = await readText({ clipboard: { readText: async () => '' }, isSecureContext: true })
+  it('空文字・空白のみは empty', async () => {
+    const r = await readText({ clipboard: { readText: async () => ' \n' }, isSecureContext: true })
     expect(r).toEqual({ result: 'empty' })
   })
   it('非セキュアコンテキストや API なしは unsupported', async () => {

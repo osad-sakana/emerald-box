@@ -25,6 +25,7 @@ export interface AiWorkshopDeps {
 }
 
 const LANGS: readonly EditorLang[] = ['html', 'css', 'javascript']
+const LANG_NAMES: Record<EditorLang, string> = { html: 'HTML', css: 'CSS', javascript: 'JavaScript' }
 const isLang = (v: string | undefined): v is EditorLang => LANGS.includes(v as EditorLang)
 
 export const attachAiWorkshop = (deps: AiWorkshopDeps) => {
@@ -37,7 +38,10 @@ export const attachAiWorkshop = (deps: AiWorkshopDeps) => {
 
   const syncLabel = (lang: EditorLang) => {
     for (const btn of pasteButtons) {
-      if (btn.dataset.lang === lang) btn.textContent = pasteButtonLabel(models[lang].getValue())
+      if (btn.dataset.lang !== lang) continue
+      const label = pasteButtonLabel(models[lang].getValue())
+      btn.textContent = label
+      btn.setAttribute('aria-label', `${LANG_NAMES[lang]}を${label}`)
     }
   }
   const syncAllLabels = () => LANGS.forEach(syncLabel)

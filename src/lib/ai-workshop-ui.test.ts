@@ -7,6 +7,7 @@ class Range {
   constructor(public a: number, public b: number, public c: number, public d: number) {}
 }
 
+let abort = new AbortController()
 const setup = (search: string, read: ReadResult, values = { html: '', css: 'a{}', javascript: '' }) => {
   document.documentElement.removeAttribute('data-ai-workshop')
   document.body.innerHTML = `
@@ -26,7 +27,9 @@ const setup = (search: string, read: ReadResult, values = { html: '', css: 'a{}'
   const current = { ...values }
   const history = { replaceState: vi.fn() }
   const events: boolean[] = []
-  document.addEventListener('ai-workshop:state', (e) => events.push((e as CustomEvent).detail))
+  document.addEventListener('ai-workshop:state', (e) => events.push((e as CustomEvent).detail), {
+    signal: abort.signal,
+  })
   const api = attachAiWorkshop({
     doc: document,
     location: { search, href: `https://x.test/${search}` },
@@ -49,6 +52,8 @@ const status = () => document.getElementById('paste-status')!.textContent
 
 describe('attachAiWorkshop', () => {
   beforeEach(() => {
+    abort.abort()
+    abort = new AbortController()
     document.body.innerHTML = ''
   })
 
@@ -104,6 +109,7 @@ describe('attachAiWorkshop', () => {
     current.html = '<p>x</p>'
     api.onContentChange('html')
     expect(btn('html').textContent).toBe('すべて消して貼り付け')
+    expect(btn('html').getAttribute('aria-label')).toBe('HTMLをすべて消して貼り付け')
     expect(status()).toBe('')
 
     const off = setup('', { result: 'denied' })
